@@ -4,30 +4,28 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>WindsorML Aerodynamic Surrogate Dashboard</title>
-<link rel="stylesheet" href="dashboard.css">
+<link rel="stylesheet" href="style.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="windsor_data.js"></script>
 </head>
 <body>
 
-<!-- Mobile hamburger -->
-<button class="hamburger" onclick="toggleMobileNav()" aria-label="Open navigation">
+<button class="hamburger" onclick="openMobileNav()" aria-label="Open navigation">
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
     <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
   </svg>
 </button>
 <div class="nav-overlay" id="nav-overlay" onclick="closeMobileNav()"></div>
 
-<!-- Navigation drawer -->
 <nav id="main-nav">
   <div class="nav-header">
     <div class="nav-header-inner">
-      <div class="nav-badge">WindsorML v2.0</div>
-      <div class="nav-title">Aerodynamic Drag<br>Surrogate Suite</div>
+      <div class="nav-title">Aerodynamic Drag Surrogate</div>
+      <div class="nav-subtitle">WindsorML v2.0</div>
     </div>
-    <button class="nav-toggle" onclick="toggleNavCollapse()" title="Collapse navigation">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M15 18l-6-6 6-6"/>
+    <button class="nav-toggle" onclick="toggleNav()" aria-label="Collapse navigation">
+      <svg id="nav-toggle-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transition:transform .28s">
+        <polyline points="15 18 9 12 15 6"/>
       </svg>
     </button>
   </div>
@@ -40,15 +38,14 @@
         <rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/>
         <rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/>
       </svg>
-      <span class="nav-item-label">Overview</span>
+      <span class="nav-label">Overview</span>
     </div>
 
     <div class="nav-item" onclick="showPage('models',this)">
       <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-        <circle cx="12" cy="12" r="3"/>
-        <path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1l2.1-2.1M17 7l2.1-2.1"/>
+        <circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1l2.1-2.1M17 7l2.1-2.1"/>
       </svg>
-      <span class="nav-item-label">ML Models</span>
+      <span class="nav-label">ML Models</span>
     </div>
 
     <div class="nav-item" onclick="showPage('calculator',this)">
@@ -56,14 +53,14 @@
         <rect x="4" y="2" width="16" height="20" rx="3"/>
         <path d="M8 8h8M8 12h8M8 16h4"/>
       </svg>
-      <span class="nav-item-label">CFD Calculator</span>
+      <span class="nav-label">CFD Calculator</span>
     </div>
 
     <div class="nav-item" onclick="showPage('analysis',this)">
       <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
         <polyline points="2,18 8,10 14,14 22,4"/><line x1="2" y1="18" x2="22" y2="18"/>
       </svg>
-      <span class="nav-item-label">Analysis</span>
+      <span class="nav-label">Analysis</span>
     </div>
 
     <div class="nav-item" onclick="showPage('dataset',this)">
@@ -72,24 +69,24 @@
         <path d="M3 6v6c0 2.2 4 4 9 4s9-1.8 9-4V6"/>
         <path d="M3 12v6c0 2.2 4 4 9 4s9-1.8 9-4v-6"/>
       </svg>
-      <span class="nav-item-label">Dataset</span>
+      <span class="nav-label">Dataset</span>
     </div>
   </div>
 
   <div class="nav-footer">
-    <div class="nav-footer-txt">Rutej Talati 2026</div>
+    <span class="nav-footer-text">Rutej Talati 2026</span>
   </div>
 </nav>
 
 <main id="main-content">
 
-<!-- ══ OVERVIEW ══ -->
+<!-- OVERVIEW -->
 <div class="page active" id="page-overview">
   <div class="page-header">
-    <div class="page-eyebrow">Dashboard · Overview</div>
-    <div class="greeting-line" id="greeting-text">Good morning</div>
+    <div id="greeting-line" class="greeting-line"></div>
+    <div class="page-eyebrow">Dashboard Overview</div>
     <div class="page-title">Aerodynamic Drag Surrogate<br>Model Performance Summary</div>
-    <div class="page-desc">Five machine learning surrogate models trained on 355 WindsorML Wall Modelled LES simulations to predict drag coefficient C<sub>d</sub> from Windsor body geometry parameters, the canonical automotive bluff body benchmark.</div>
+    <div class="page-desc">Five machine learning surrogate models trained on 355 WindsorML Wall Modelled LES simulations to predict drag coefficient C<sub>d</sub> from Windsor body geometry parameters, the canonical automotive bluff body benchmark. All models are evaluated using rigorous 5 fold cross validation on the same dataset.</div>
   </div>
 
   <div class="content">
@@ -102,7 +99,7 @@
       <div class="stat-card">
         <div class="stat-label">Best CV RMSE</div>
         <div class="stat-value">0.00779</div>
-        <div class="stat-sub">Custom Stack, 17.6% better than GP</div>
+        <div class="stat-sub">Custom Stack, 17.6% better than GP alone</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Input Parameters</div>
@@ -112,13 +109,13 @@
       <div class="stat-card">
         <div class="stat-label">Models Deployed</div>
         <div class="stat-value">5</div>
-        <div class="stat-sub">GP · GB · RF · MLP · Custom Stack</div>
+        <div class="stat-sub">GP, GB, RF, MLP, Custom Stack</div>
       </div>
     </div>
 
     <div class="section-head">
       <div class="section-title">Model Performance Comparison</div>
-      <div class="section-sub">5-fold cross-validated RMSE and R2 on 355 WindsorML samples. Lower RMSE is better. Bar width shows relative accuracy.</div>
+      <div class="section-sub">5 fold cross validated RMSE and R squared on 355 WindsorML samples. Lower RMSE is better. Bar width represents relative accuracy versus the best model.</div>
     </div>
 
     <div class="perf-row fade d1">
@@ -149,16 +146,16 @@
       <div class="perf-card">
         <div class="perf-name">Neural Network MLP</div>
         <div class="perf-rmse">0.01850</div>
-        <div class="perf-r2">R2 = 0.71 (355 samples)</div>
+        <div class="perf-r2">R2 = 0.710 (CV)</div>
         <div class="perf-bar"><div class="perf-fill" style="width:42%"></div></div>
       </div>
     </div>
 
     <div class="rmse-scale fade d2">
-      <div class="rmse-tier"><span class="rmse-dot" style="background:#1B5E20"></span><div class="rmse-text"><strong>Below 0.003</strong>Wind tunnel grade</div></div>
-      <div class="rmse-tier"><span class="rmse-dot" style="background:#1565C0"></span><div class="rmse-text"><strong>0.003 to 0.010</strong>Engineering grade, design screening</div></div>
-      <div class="rmse-tier"><span class="rmse-dot" style="background:#BF360C"></span><div class="rmse-text"><strong>0.010 to 0.020</strong>Acceptable for early stage ranking</div></div>
-      <div class="rmse-tier"><span class="rmse-dot" style="background:#B71C1C"></span><div class="rmse-text"><strong>Above 0.020</strong>Indicative only</div></div>
+      <div class="rmse-tier"><span class="rmse-dot" style="background:#1b5e20"></span><div class="rmse-text"><strong>Below 0.003</strong>Wind tunnel grade</div></div>
+      <div class="rmse-tier"><span class="rmse-dot" style="background:#1a56db"></span><div class="rmse-text"><strong>0.003 to 0.010</strong>Engineering grade, design screening</div></div>
+      <div class="rmse-tier"><span class="rmse-dot" style="background:#7c4f00"></span><div class="rmse-text"><strong>0.010 to 0.020</strong>Acceptable for early stage ranking</div></div>
+      <div class="rmse-tier"><span class="rmse-dot" style="background:#ba1a1a"></span><div class="rmse-text"><strong>Above 0.020</strong>Indicative only</div></div>
     </div>
 
     <hr class="divider">
@@ -167,7 +164,7 @@
       <div class="m3-card">
         <div class="card-header">
           <div class="card-title">Feature Importance</div>
-          <div class="card-sub">Random Forest, Windsor body geometry parameters ranked by Gini impurity on 355 WindsorML samples</div>
+          <div class="card-sub">Random Forest Gini impurity ranking on 355 WindsorML samples. Scores sum to 1.0.</div>
         </div>
         <div class="card-body">
           <table class="fi-table">
@@ -179,24 +176,23 @@
 
       <div class="m3-card">
         <div class="card-header">
-          <div class="card-title">Actual vs Predicted</div>
-          <div class="card-sub">Custom Built Model out-of-fold CV predictions on 355 WindsorML samples. Points on the diagonal line indicate perfect prediction.</div>
+          <div class="card-title">Actual vs Predicted — Custom Built Model</div>
+          <div class="card-sub">Out of fold CV predictions on 355 WindsorML samples. Points on the diagonal indicate perfect prediction accuracy.</div>
         </div>
         <div class="card-body">
           <div class="chart-wrap" style="height:280px"><canvas id="avp-chart"></canvas></div>
-          <div class="chart-caption">Blue diagonal line = perfect prediction. Points clustered near this line confirm the model accuracy of RMSE 0.00779.</div>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ══ MODELS ══ -->
+<!-- MODELS -->
 <div class="page" id="page-models">
   <div class="page-header">
-    <div class="page-eyebrow">ML Models · Methodology</div>
-    <div class="page-title">Five Models: Purpose,<br>Architecture and Accuracy</div>
-    <div class="page-desc">Each model was selected for a specific engineering or statistical reason. All five are trained on 355 WindsorML Wall Modelled LES simulations. Expand any card to read the full rationale, sample size requirements, technical configuration, and accuracy context.</div>
+    <div class="page-eyebrow">ML Models and Methodology</div>
+    <div class="page-title">Five Models, Five Purposes</div>
+    <div class="page-desc">Each model in this suite was selected for a distinct engineering or statistical reason. All five are trained on the same 355 WindsorML Wall Modelled LES simulations and evaluated with identical 5 fold cross validation. Expand any card using the See more button to read the full technical rationale, sample size guidance, configuration details, and WindsorML accuracy results.</div>
   </div>
 
   <div class="content">
@@ -204,13 +200,13 @@
 
       <!-- GP -->
       <div class="model-card fade d1">
-        <div class="model-indicator-bar" style="background:linear-gradient(90deg,#1565C0,#0288D1)"></div>
+        <div class="model-indicator-bar" style="background:linear-gradient(90deg,#006876,#00838f)"></div>
         <div class="model-card-body">
           <div class="model-header">
             <div class="model-name">Gaussian Process<br>Regression</div>
-            <span class="m3-chip chip-blue">Best single model</span>
+            <span class="m3-chip chip-teal">Best single model</span>
           </div>
-          <p class="model-summary">A probabilistic surrogate that predicts a complete probability distribution over drag coefficient rather than a single point estimate. Every prediction carries a fully calibrated confidence interval derived from the Matern covariance kernel. In densely sampled regions of the Windsor geometry space the uncertainty band collapses to near zero, while in sparse regions it expands to signal where the next CFD simulation should be placed. This makes the GP the natural foundation for Bayesian active learning in aerodynamic design.</p>
+          <p class="model-summary">A probabilistic model that predicts a full probability distribution over Cd rather than a single point value. Every prediction carries a calibrated confidence interval, making it the only model in this suite that can quantify how uncertain it is about any given Windsor geometry configuration. This uncertainty output is the foundation of Bayesian optimisation for targeted CFD run placement.</p>
           <div class="model-metrics">
             <div class="metric-pill">
               <div class="metric-pill-label">CV RMSE</div>
@@ -218,48 +214,46 @@
               <div class="m3-progress"><div class="m3-progress-fill" style="width:82%"></div></div>
             </div>
             <div class="metric-pill">
-              <div class="metric-pill-label">CV R2</div>
-              <div class="metric-pill-value">0.905</div>
+              <div class="metric-pill-label">Train R2</div>
+              <div class="metric-pill-value">1.000</div>
             </div>
             <div class="metric-pill">
               <div class="metric-pill-label">Uncertainty</div>
-              <div class="metric-pill-value">Yes +/- sigma</div>
+              <div class="metric-pill-value">Yes, plus minus sigma</div>
             </div>
           </div>
-          <button class="expand-btn" onclick="toggleDetail('gp-detail',this)">
+          <button class="see-more-btn" onclick="toggleDetail('gp-detail',this)">
             <span>See more</span>
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5l4 4 4-4"/></svg>
           </button>
           <div class="model-detail" id="gp-detail">
             <div class="detail-label">Why this model was chosen</div>
-            <div class="detail-text">The Gaussian Process is the statistically optimal choice for the 355-sample WindsorML dataset. Unlike any other model in this suite, it does not predict a single number but a complete probability distribution over possible Cd values. Every prediction carries a calibrated confidence interval. In regions of the Windsor parameter space that are densely sampled by the 355 WMLES runs, GP uncertainty collapses to near zero. In sparse regions, uncertainty inflates, acting as a direct signal that a new simulation should be placed there. This is the foundation of Bayesian optimisation: the next CFD run is always placed at the point of maximum expected information gain rather than chosen arbitrarily. The model uses a Matern covariance kernel with smoothness parameter 2.5, which assumes the drag surface is twice differentiable but not infinitely smooth. This is physically appropriate for Windsor body aerodynamics near the critical fastback separation phenomena where flow topology changes sharply but continuously.</div>
-            <div class="detail-label">Why the GP excels at 355 samples</div>
-            <div class="detail-text">Gaussian Processes operate in a regime where they outperform all neural networks and gradient-boosted tree models when sample counts fall between approximately 100 and 500. At this scale the GP can build a complete probabilistic map of the drag response surface without overfitting, while a neural network would lack sufficient training examples to learn stable hidden layer representations. The 355 WindsorML samples sit precisely in this optimal range. Above approximately 1000 samples, the GP matrix inversion cost scales cubically with sample count, making retraining prohibitively slow, at which point the MLP and gradient-boosted trees would become the preferred architecture.</div>
-            <div class="detail-label">Sample size context</div>
-            <span class="sample-chip sc-current">355 samples (WindsorML): optimal GP regime</span>
-            <span class="sample-chip sc-needed">500 or more: Neural Network begins to compete</span>
-            <span class="sample-chip sc-needed">1000 or more: GP matrix inversion becomes costly</span>
+            <div class="detail-text">The Gaussian Process is the statistically optimal choice for the 355 sample WindsorML dataset. Unlike every other model in this suite, it does not predict a single number but a complete probability distribution over possible Cd values. Every prediction carries a calibrated confidence interval. In regions of the Windsor parameter space that are densely sampled by the 355 WMLES runs, GP uncertainty collapses to near zero. In sparse regions, uncertainty inflates, acting as a direct signal that a new simulation should be placed there. This is the foundation of Bayesian optimisation: the next CFD run is always placed at the point of maximum expected information gain rather than chosen arbitrarily. The model uses a Matern covariance kernel with smoothness parameter 2.5, which assumes the drag surface is twice differentiable but not infinitely smooth. This is physically appropriate for Windsor body aerodynamics near the critical fastback separation phenomena where Cd changes sharply as rear geometry crosses separation thresholds.</div>
+            <div class="detail-label">Sample size requirements</div>
+            <span class="sample-chip sc-current">355 samples (WindsorML) — optimal GP regime</span>
+            <span class="sample-chip sc-needed">500 or more samples — Neural Network begins to compete</span>
+            <span class="sample-chip sc-needed">1000 or more samples — GP cubic cost becomes limiting</span>
             <div style="margin-bottom:14px"></div>
             <div class="detail-label">Technical configuration</div>
             <div class="detail-code">Kernel: ConstantKernel(1.0) x Matern(nu=2.5, l=1.0) + WhiteKernel
 Normalise outputs: True   Alpha: 1e-6
-Optimiser restarts: 10   Scaling: StandardScaler
-Uncertainty output: mean +/- 1 sigma at every query point</div>
+Optimiser restarts: 10   Input scaling: StandardScaler
+Uncertainty output: mean plus or minus 1 sigma at every query point</div>
             <div class="detail-label">Accuracy on WindsorML</div>
-            <div class="detail-text">On the 355-sample WindsorML dataset, the GP achieves CV RMSE of 0.00946, which places it firmly in the engineering-grade band between 0.003 and 0.010. It outperforms Gradient Boosting by 42% and Random Forest by 33% in RMSE. The Neural Network is now competitive at 355 samples but still trails the GP by approximately 20% in RMSE. The ensemble custom stack beats the GP by a further 17.6% by blending it with ExtraTrees predictions via hill-climb weight optimisation.</div>
+            <div class="detail-text">On the 355 sample WindsorML dataset, the GP achieves CV RMSE of 0.00946, which places it firmly in the engineering grade band suitable for design screening decisions. It outperforms Gradient Boosting by 42% and Random Forest by 33% in RMSE. The Neural Network is now competitive at 355 samples but still trails the GP. Above approximately 1000 samples, the GP cubic scaling cost would make it impractical to retrain, at which point the MLP and gradient boosted trees would become the preferred alternatives for production inference.</div>
           </div>
         </div>
       </div>
 
       <!-- GB -->
       <div class="model-card fade d2">
-        <div class="model-indicator-bar" style="background:linear-gradient(90deg,#0277BD,#0288D1)"></div>
+        <div class="model-indicator-bar" style="background:linear-gradient(90deg,#5068a9,#3f51b5)"></div>
         <div class="model-card-body">
           <div class="model-header">
             <div class="model-name">Gradient Boosting<br>Regressor</div>
-            <span class="m3-chip chip-teal">Production model</span>
+            <span class="m3-chip chip-blue">Production model</span>
           </div>
-          <p class="model-summary">An ensemble of shallow decision trees trained sequentially, where each tree learns to correct the residual errors of all previous trees. The shallow tree depth limits each individual learner to simple axis-aligned splits, while the sequential residual correction drives the overall prediction toward high accuracy. Produces the most stable and interpretable point predictions for Windsor body design review, ranked comparison of design variants, and management presentations where a single definitive Cd estimate is required.</p>
+          <p class="model-summary">An ensemble of decision trees constructed sequentially, where each successive tree is trained to correct the residual errors of all prior trees. The learning rate of 0.05 enforces many small gradient steps rather than large corrections, making it the most stable and deterministic point predictor in this suite. Recommended for formal design reviews and ranked comparisons of Windsor body variants where a single reliable Cd value is required.</p>
           <div class="model-metrics">
             <div class="metric-pill">
               <div class="metric-pill-label">CV RMSE</div>
@@ -275,39 +269,37 @@ Uncertainty output: mean +/- 1 sigma at every query point</div>
               <div class="metric-pill-value">100</div>
             </div>
           </div>
-          <button class="expand-btn" onclick="toggleDetail('gb-detail',this)">
+          <button class="see-more-btn" onclick="toggleDetail('gb-detail',this)">
             <span>See more</span>
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5l4 4 4-4"/></svg>
           </button>
           <div class="model-detail" id="gb-detail">
             <div class="detail-label">Why this model was chosen</div>
-            <div class="detail-text">Gradient Boosting builds its ensemble by training trees sequentially, with each tree fitting the residuals of all previous trees. A learning rate of 0.05 forces many small correction steps rather than large ones, preventing overfitting across the 355-sample WindsorML dataset. Shallow trees with maximum depth of 3 capture dominant nonlinear relationships in the Windsor geometry space, such as the drag sensitivity to rear fastback ratio in the 0.30 to 0.45 range, without memorising noise. Gradient Boosting is the recommended model when a single definitive Cd estimate is needed for a design review, a management presentation, or a ranked comparison of Windsor body variants, because it produces consistent, deterministic predictions with no stochastic component.</div>
-            <div class="detail-label">When to prefer Gradient Boosting over GP</div>
-            <div class="detail-text">Choose Gradient Boosting over the GP when uncertainty estimates are not required and when prediction speed at inference time matters. The GP requires solving a linear system at prediction time, which scales with the number of training samples. Gradient Boosting evaluates 100 shallow trees in microseconds regardless of dataset size. At 500 samples or more, Gradient Boosting is expected to close the accuracy gap with the GP because gradient-boosted trees scale better with sample count.</div>
-            <div class="detail-label">Sample size context</div>
-            <span class="sample-chip sc-current">355 samples (WindsorML): strong performance</span>
-            <span class="sample-chip sc-needed">500 or more (DrivAerML): further accuracy improvement</span>
-            <span class="sample-chip sc-needed">1000 or more: approaching MLP performance ceiling</span>
+            <div class="detail-text">Gradient Boosting builds its ensemble by training trees sequentially, with each tree fitting the residuals of all previous trees in the sequence. A learning rate of 0.05 forces many small correction steps rather than large ones, which prevents overfitting across the 355 sample WindsorML dataset. Shallow trees with maximum depth of 3 capture dominant nonlinear relationships in the Windsor geometry space, such as the drag sensitivity to rear fastback ratio in the 0.30 to 0.45 range, without memorising noise from individual simulation runs. Gradient Boosting is the recommended model when a single definitive Cd estimate is needed for a design review, a management presentation, or a ranked comparison of Windsor body variants, because it produces consistent and deterministic predictions with no stochastic component whatsoever. There is no seed variability or sampling randomness in its predictions.</div>
+            <div class="detail-label">Sample size requirements</div>
+            <span class="sample-chip sc-current">355 samples (WindsorML) — strong performance</span>
+            <span class="sample-chip sc-needed">500 or more (DrivAerML) — further accuracy improvement expected</span>
+            <span class="sample-chip sc-needed">1000 or more samples — approaching Neural Network performance ceiling</span>
             <div style="margin-bottom:14px"></div>
             <div class="detail-label">Technical configuration</div>
             <div class="detail-code">n_estimators: 100   learning_rate: 0.05
 max_depth: 3   subsample: 0.8
-Loss: squared error   No input scaling required</div>
+Loss function: squared error   No input scaling required</div>
             <div class="detail-label">Accuracy on WindsorML</div>
-            <div class="detail-text">On 355 WindsorML samples, Gradient Boosting achieves CV RMSE of 0.01624, placing it in the acceptable for early-stage ranking band between 0.010 and 0.020. Sequential residual correction gives it a clear advantage over Random Forest at this sample count. The GP outperforms it by 42% in RMSE, primarily because the GP is operating in its optimal sample-size regime. At 1000 samples, Gradient Boosting is expected to close that gap significantly and may become the preferred single model.</div>
+            <div class="detail-text">On 355 WindsorML samples, Gradient Boosting achieves CV RMSE of 0.01624. This sits in the acceptable for early stage ranking band, not quite reaching engineering grade. Sequential residual correction gives it a clear advantage over Random Forest at this sample count because each new tree is guided by the specific errors of all previous trees rather than being trained independently. The GP outperforms it by 42% in RMSE, primarily because the GP is operating in its optimal sample size regime at 355 samples. At 1000 samples, Gradient Boosting is expected to close that gap significantly as its sequential learning advantage compounds with more data.</div>
           </div>
         </div>
       </div>
 
       <!-- RF -->
       <div class="model-card fade d3">
-        <div class="model-indicator-bar" style="background:linear-gradient(90deg,#00838F,#006064)"></div>
+        <div class="model-indicator-bar" style="background:linear-gradient(90deg,#7c4f00,#e65100)"></div>
         <div class="model-card-body">
           <div class="model-header">
             <div class="model-name">Random Forest<br>Regressor</div>
-            <span class="m3-chip chip-green">Feature analysis</span>
+            <span class="m3-chip chip-amber">Feature analysis</span>
           </div>
-          <p class="model-summary">An ensemble of 200 independently grown decision trees that predicts by simple averaging. Each tree is trained on a bootstrap sample of the 355 WindsorML runs with random feature subsampling at each split, ensuring that individual trees are diverse and uncorrelated. Its primary value in this suite is not raw prediction accuracy but the built-in Gini feature importance scores that directly rank which Windsor body geometry parameters most strongly drive total aerodynamic drag, enabling informed decisions about where to invest future CFD simulation budget.</p>
+          <p class="model-summary">An ensemble of 200 independently grown decision trees that predicts by averaging all tree outputs. Its primary value in this suite is not drag prediction accuracy but the built in Gini impurity feature importance scores it generates as a byproduct of training. These scores directly rank which Windsor body geometry parameters most influence Cd across the 355 WMLES simulations, providing actionable guidance for where to concentrate future CFD simulation runs in a design of experiments.</p>
           <div class="model-metrics">
             <div class="metric-pill">
               <div class="metric-pill-label">CV RMSE</div>
@@ -323,43 +315,41 @@ Loss: squared error   No input scaling required</div>
               <div class="metric-pill-value">200</div>
             </div>
           </div>
-          <button class="expand-btn" onclick="toggleDetail('rf-detail',this)">
+          <button class="see-more-btn" onclick="toggleDetail('rf-detail',this)">
             <span>See more</span>
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5l4 4 4-4"/></svg>
           </button>
           <div class="model-detail" id="rf-detail">
             <div class="detail-label">Why this model was chosen</div>
-            <div class="detail-text">The Random Forest's most important contribution is not drag prediction accuracy but the Gini-based feature importance scores it generates as a byproduct of training. On the 355-sample WindsorML dataset, these scores show that rear fastback ratio (rlbf) accounts for 34.9% of total Cd variation, nose to windshield height ratio (rhnw) accounts for 19.8%, and fastback height ratio (rhfb) accounts for 17.8%. This means that when planning the next batch of Windsor simulations, the priority order for parameter variation is clear: concentrate new runs at varying rlbf first, then rhnw, then rhfb. Side taper, ground clearance, bottom taper angle, and frontal area together account for under 30% and need only moderate coverage in a follow-on design of experiments.</div>
-            <div class="detail-label">Understanding the importance scores</div>
-            <div class="detail-text">Gini impurity-based importance measures how often a parameter appears in a tree split, weighted by the reduction in prediction error that the split achieves. A high importance score means the model relies heavily on that parameter to distinguish high-drag from low-drag Windsor configurations. The rear fastback ratio dominance at 34.9% is physically consistent with known Windsor aerodynamics: the fastback slope directly controls whether the boundary layer separates at the trailing edge or whether it follows the surface, which is the dominant mechanism determining total drag in the Cd range of 0.240 to 0.344 covered by the WindsorML dataset.</div>
-            <div class="detail-label">Sample size context</div>
-            <span class="sample-chip sc-current">355 samples (WindsorML): importance rankings stable and reliable</span>
-            <span class="sample-chip sc-needed">500 or more: prediction accuracy improves further</span>
-            <span class="sample-chip sc-needed">1000 or more: full sensitivity analysis capability</span>
+            <div class="detail-text">The Random Forest's most important contribution to this suite is not drag prediction accuracy but the Gini based feature importance scores it generates as a byproduct of training. On the 355 sample WindsorML dataset, these scores reveal that rear fastback ratio accounts for 34.9% of total Cd variation, nose to windshield height ratio accounts for 19.8%, and fastback height ratio accounts for 17.8%. This means that when planning the next batch of Windsor simulations, the priority order for parameter variation is immediately clear: concentrate new runs at varying rear fastback ratio first, then nose to windshield height, then fastback height. Side taper, ground clearance, bottom taper angle, and frontal area together account for under 30% of variation and therefore need only moderate coverage in a follow on design of experiments campaign. This information directly reduces wasted simulation budget.</div>
+            <div class="detail-label">Sample size requirements</div>
+            <span class="sample-chip sc-current">355 samples (WindsorML) — importance rankings now stable</span>
+            <span class="sample-chip sc-needed">500 or more samples — prediction accuracy improves further</span>
+            <span class="sample-chip sc-needed">1000 or more samples — full sensitivity analysis capability unlocked</span>
             <div style="margin-bottom:14px"></div>
             <div class="detail-label">Technical configuration</div>
             <div class="detail-code">n_estimators: 200   min_samples_leaf: 2
 max_features: sqrt(n_features)   bootstrap: True
-Primary use: feature importance reporting and DoE planning</div>
+Primary use: feature importance reporting and experiment planning</div>
             <div class="detail-label">Accuracy on WindsorML</div>
-            <div class="detail-text">The Random Forest ranks third on 355 WindsorML samples with CV RMSE of 0.01418, sitting in the acceptable for early-stage ranking band. Independent tree averaging gives it slightly better accuracy than Gradient Boosting at this sample count because the 355-sample dataset has enough coverage for tree diversity to be beneficial. Feature importance rankings are stable at this sample count and can be trusted for experiment planning decisions.</div>
+            <div class="detail-text">The Random Forest ranks third on 355 WindsorML samples with CV RMSE of 0.01418, which sits in the acceptable for early stage ranking band. Independent tree averaging gives it slightly better accuracy than Gradient Boosting at this sample count because the 355 sample dataset provides enough coverage for tree diversity to be genuinely beneficial. The GP outperforms it by 33% in RMSE. Critically, the feature importance rankings produced by the Random Forest are stable at this sample count and can be trusted for experiment planning decisions about where to concentrate the next batch of high fidelity CFD runs in the Windsor geometry space.</div>
           </div>
         </div>
       </div>
 
-      <!-- MLP -->
+      <!-- NN -->
       <div class="model-card fade d4">
-        <div class="model-indicator-bar" style="background:linear-gradient(90deg,#4527A0,#311B92)"></div>
+        <div class="model-indicator-bar" style="background:linear-gradient(90deg,#4527a0,#6a1b9a)"></div>
         <div class="model-card-body">
           <div class="model-header">
             <div class="model-name">Neural Network<br>sklearn MLPRegressor</div>
             <span class="m3-chip chip-purple">Scale benchmark</span>
           </div>
-          <p class="model-summary">A feedforward network with three hidden layers of 128, 64, and 32 neurons each with ReLU activations, trained on 355 WindsorML samples using Adam optimisation with early stopping. Unlike tree-based models that learn axis-aligned step functions, the MLP learns a continuous global function across all 7 Windsor geometry parameters simultaneously, enabling it to capture smooth interaction effects between parameters such as the combined influence of rear fastback ratio and fastback height ratio on trailing-edge separation.</p>
+          <p class="model-summary">A feedforward neural network with three hidden layers of 128, 64, and 32 neurons using ReLU activations, trained on the full 355 WindsorML samples. Unlike tree based models, the MLP learns a continuous global function across all 7 Windsor geometry parameters simultaneously, capturing smooth interaction effects such as the combined influence of rear fastback ratio and fastback height ratio on trailing edge separation that tree models can only approximate through axis aligned step boundaries. Included as a scaling benchmark whose advantage increases substantially beyond 500 training samples.</p>
           <div class="model-metrics">
             <div class="metric-pill">
               <div class="metric-pill-label">Architecture</div>
-              <div class="metric-pill-value" style="font-size:13px">128 · 64 · 32</div>
+              <div class="metric-pill-value" style="font-size:12px">128 then 64 then 32</div>
             </div>
             <div class="metric-pill">
               <div class="metric-pill-label">CV RMSE</div>
@@ -370,44 +360,43 @@ Primary use: feature importance reporting and DoE planning</div>
               <div class="metric-pill-value">0.710</div>
             </div>
           </div>
-          <button class="expand-btn" onclick="toggleDetail('nn-detail',this)">
+          <button class="see-more-btn" onclick="toggleDetail('nn-detail',this)">
             <span>See more</span>
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5l4 4 4-4"/></svg>
           </button>
           <div class="model-detail" id="nn-detail">
             <div class="detail-label">Why this model was chosen</div>
-            <div class="detail-text">The sklearn MLPRegressor with architecture Input 7 to Dense 128 ReLU to Dense 64 ReLU to Dense 32 ReLU to Output 1 is trained on the full 355-sample WindsorML dataset, which brings it into a functional operating regime. Unlike tree-based models, the MLP learns a continuous global function across all 7 Windsor geometry parameters simultaneously. This allows it to capture smooth interaction effects between parameters, for example the combined influence of rear fastback ratio and fastback height ratio on trailing edge separation, which tree-based models can only approximate through axis-aligned step boundaries. Early stopping with a patience of 30 epochs prevents overfitting without manual regularisation tuning. Note: earlier benchmark runs on the 50-sample synthetic dataset showed R2 of negative 13.6, which was a consequence of that dataset being too small for a network of this capacity. The R2 of 0.71 above reflects the 355-sample WindsorML training.</div>
-            <div class="detail-label">When the MLP becomes the preferred model</div>
-            <div class="detail-text">The MLP's capacity advantage over the GP and tree models activates at higher sample counts. With 11,040 trainable weights across its three hidden layers, the MLP has approximately 32 weights per training sample at 355 samples, which is adequate but not ideal. At 500 DrivAerML samples it is projected to reach RMSE near 0.012, approaching the GP. At 1000 or more samples it becomes the preferred architecture because gradient-boosted trees plateau in accuracy and the GP becomes computationally expensive to retrain, while the MLP can continue to improve by increasing layer depth or width.</div>
-            <div class="detail-label">Sample size context</div>
-            <span class="sample-chip sc-current">355 samples (WindsorML): functional operating range</span>
-            <span class="sample-chip sc-needed">500 samples (DrivAerML): improved generalisation expected</span>
-            <span class="sample-chip sc-needed">1000 or more: deep architecture becomes the preferred approach</span>
+            <div class="detail-text">The sklearn MLPRegressor is now trained on the full 355 sample WindsorML dataset, which brings it into a functional operating regime. Unlike tree based models, the MLP learns a continuous global function across all 7 Windsor geometry parameters simultaneously. This allows it to capture smooth interaction effects between parameters, for example the combined influence of rear fastback ratio and fastback height ratio on trailing edge separation, which tree based models can only approximate through axis aligned step boundaries. Early stopping with a patience of 30 epochs prevents overfitting without manual regularisation tuning. With 11,040 trainable weights across its three hidden layers, the MLP has approximately 32 weights per training sample at 355 samples, which is adequate but not ideal. Performance will improve meaningfully with DrivAerML at 500 samples. Note that an earlier benchmark run against the retired 50 sample synthetic dataset showed R squared of negative 13.6, which reflected that underpowered phase. The 0.71 figure above is the accurate WindsorML result.</div>
+            <div class="detail-label">Sample size requirements</div>
+            <span class="sample-chip sc-current">355 samples (WindsorML) — now functional range</span>
+            <span class="sample-chip sc-needed">500 samples (DrivAerML) — substantially improved generalisation</span>
+            <span class="sample-chip sc-needed">1000 or more samples — deep architecture becomes the preferred option</span>
             <div style="margin-bottom:14px"></div>
             <div class="detail-label">Technical configuration</div>
             <div class="detail-code">Library: sklearn.neural_network.MLPRegressor
-Layers: Input(7) -> Dense(128, ReLU) -> Dense(64, ReLU) -> Dense(32, ReLU) -> Output(1)
+Layers: Input(7) then Dense(128, ReLU) then Dense(64, ReLU) then Dense(32, ReLU) then Output(1)
 Solver: Adam   lr_init: 0.001   alpha (L2): 0.001
 Early stopping: True   Val fraction: 0.2   Patience: 30
 Input scaling: StandardScaler (zero mean, unit variance) required</div>
             <div class="detail-label">Accuracy on WindsorML</div>
-            <div class="detail-text">With 355 WindsorML samples, the MLP achieves CV RMSE of approximately 0.0185 and R2 of 0.71. It outperforms Gradient Boosting in R2 and is competitive with Random Forest in RMSE. The GP retains a clear advantage due to its Bayesian kernel formulation being better suited to smooth aerodynamic surfaces at this sample count. At 500 samples the MLP is projected to reach RMSE near 0.012, approaching the GP.</div>
+            <div class="detail-text">With 355 WindsorML samples, the MLP achieves CV RMSE of approximately 0.0185 and R squared of 0.71. It now outperforms Gradient Boosting in R squared and is competitive with Random Forest in RMSE. The GP retains a clear advantage due to its Bayesian kernel formulation being better suited to smooth aerodynamic surfaces at this sample count. At 500 samples it is projected to reach RMSE near 0.012, approaching the GP. At 1000 or more samples, the MLP is expected to become the strongest single model in the suite.</div>
           </div>
         </div>
       </div>
+
     </div>
 
-    <!-- Custom Stack — full width -->
+    <!-- Custom Stack full width -->
     <div class="model-card fade d5" style="margin-top:14px">
-      <div class="model-indicator-bar" style="background:linear-gradient(90deg,#090F1C,#1565C0,#090F1C)"></div>
+      <div class="model-indicator-bar" style="background:linear-gradient(90deg,#1a56db,#0d47a1)"></div>
       <div class="model-card-body">
         <div class="model-header">
           <div class="model-name">Custom Built Model — MRV Aero Stack v1</div>
-          <span class="m3-chip chip-black">Featured · Best overall</span>
+          <span class="m3-chip chip-black">Featured and Production</span>
         </div>
         <div class="grid-2" style="gap:28px">
           <div>
-            <p class="model-summary">A purpose-built stacked ensemble combining five heterogeneous base learners: XGBoost, LightGBM, CatBoost, ExtraTrees, and a Matern Gaussian Process. Hill-climb weight optimisation on out-of-fold predictions finds the combination that minimises real held-out error rather than training error. Adds physics-informed feature engineering including pairwise products, squared terms, log and square root transforms, and dynamic-pressure proxy variables. Applies a log-Cd target transform to stabilise prediction variance across the full Windsor Cd range. Achieves 17.6% lower CV RMSE than the best single-model baseline on the WindsorML dataset.</p>
+            <p class="model-summary">A purpose built stacked ensemble combining five heterogeneous base learners: XGBoost, LightGBM, CatBoost, ExtraTrees, and a Matern Gaussian Process. Uses hill climb weight optimisation on out of fold predictions to find the combination that minimises real held out error. Adds physics informed feature engineering including pairwise interactions, squared terms, log and square root transforms, and a dynamic pressure proxy. Uses a log Cd target transform to stabilise variance. Achieves 17.6% lower CV RMSE than the best single model baseline on the 355 sample WindsorML dataset.</p>
             <div class="model-metrics" style="grid-template-columns:repeat(3,1fr)">
               <div class="metric-pill">
                 <div class="metric-pill-label">CV RMSE</div>
@@ -422,34 +411,26 @@ Input scaling: StandardScaler (zero mean, unit variance) required</div>
                 <div class="metric-pill-value" style="font-size:12px">5 model stack</div>
               </div>
             </div>
-            <div class="detail-label" style="margin-top:14px">Ensemble weight transparency</div>
-            <div class="weight-grid">
-              <div class="weight-row"><span class="weight-name">GP</span><div class="weight-bar-bg"><div class="weight-bar-fill" style="width:96.9%"></div></div><span class="weight-pct">96.9%</span></div>
-              <div class="weight-row"><span class="weight-name">ET</span><div class="weight-bar-bg"><div class="weight-bar-fill" style="width:3.1%"></div></div><span class="weight-pct">3.1%</span></div>
-              <div class="weight-row"><span class="weight-name">XGB</span><div class="weight-bar-bg"><div class="weight-bar-fill" style="width:0.1%"></div></div><span class="weight-pct">0.0%</span></div>
-              <div class="weight-row"><span class="weight-name">LGB</span><div class="weight-bar-bg"><div class="weight-bar-fill" style="width:0.1%"></div></div><span class="weight-pct">0.0%</span></div>
-              <div class="weight-row"><span class="weight-name">CAT</span><div class="weight-bar-bg"><div class="weight-bar-fill" style="width:0.1%"></div></div><span class="weight-pct">0.0%</span></div>
-            </div>
           </div>
           <div>
-            <button class="expand-btn" onclick="toggleDetail('nn2-detail',this)" style="margin-bottom:14px">
+            <button class="see-more-btn" onclick="toggleDetail('nn2-detail',this)" style="margin-bottom:12px">
               <span>See more</span>
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5l4 4 4-4"/></svg>
             </button>
             <div class="model-detail" id="nn2-detail">
               <div class="detail-label">Why a stacked ensemble</div>
-              <div class="detail-text">No single model class is optimal across every region of the Windsor Cd surface. Tree ensembles capture sharp nonlinearities near critical fastback separation thresholds, particularly in the rear fastback ratio range of 0.20 to 0.35 where the boundary layer topology changes abruptly. The Gaussian Process captures the smooth interior of the design space with calibrated uncertainty. Stacking lets each learner contribute where it is strongest. Hill-climb weight optimisation on out-of-fold predictions finds the combination that minimises real held-out error rather than training error.</div>
-              <div class="detail-label">Why the weights are GP-dominant at 355 samples</div>
-              <div class="detail-text">The hill-climb optimiser assigned GP a weight of 0.969 and ExtraTrees a weight of 0.031, with XGBoost, LightGBM, and CatBoost all receiving zero weight. This outcome is expected and physically correct. At 355 samples the GP is the most accurate single model, and the hill-climb algorithm will always assign the highest weight to the best base learner when the training dataset is small. As the dataset grows toward 500 DrivAerML samples and beyond, the gradient-boosted tree learners will begin to receive non-zero weights because their accuracy relative to the GP improves with sample count. The stacking architecture is designed to adapt to this shift automatically.</div>
+              <div class="detail-text">No single model class is optimal across every region of the Windsor Cd surface. Tree ensembles capture sharp nonlinearities near critical fastback separation thresholds where Cd changes rapidly with small geometry adjustments. The Gaussian Process captures the smooth interior of the design space with calibrated uncertainty. CatBoost handles ordered boosting with different bias properties than XGBoost and LightGBM. ExtraTrees provides variance reduction through extreme randomisation. Stacking lets each learner contribute where it is strongest. Hill climb weight optimisation on out of fold predictions finds the combination that minimises real held out error rather than training error, which prevents the meta learner from overfitting to the base learner training predictions.</div>
+              <div class="detail-label">Ensemble weight transparency</div>
+              <div class="detail-text">At 355 samples the stack is GP dominant with weights of GP 0.969 and ExtraTrees 0.031. XGBoost, LightGBM, and CatBoost receive zero weight because the GP dominates at this sample size and the tree boosters provide no additional information that improves out of fold performance. This is expected and not a flaw in the architecture. As the dataset grows toward 1000 or more samples from DrivAerML, the hill climb weights will redistribute meaningfully toward XGBoost and LightGBM because gradient boosted trees scale better than GP past approximately 300 to 400 training points where GP matrix inversion overhead begins to dominate.</div>
               <div class="detail-label">Technical configuration</div>
               <div class="detail-code">Base learners (5): XGBoost, LightGBM, CatBoost, ExtraTrees, GP (Matern nu=2.5 + WhiteKernel)
-Feature engineering: pairwise products, x squared, log(x), sqrt(x), dynamic pressure q = 0.5 rho V squared
-Target transform: log(Cd) stabilises variance across the Windsor Cd range from 0.240 to 0.344
-Out-of-fold: 5-fold CV, 5-seed bagging per base learner
-Meta-combiner: hill-climb vs positive-Ridge, winner picked by inner CV
-Uncertainty: cross-model standard deviation (epistemic) + GP predictive sigma (calibrated)</div>
+Feature engineering: pairwise products, squared terms, log(x), sqrt(x), dynamic pressure q = 0.5 times rho times V squared
+Target transform: log(Cd) stabilises variance across the Windsor Cd range
+Out of fold training: 5 fold CV with 3 seed bagging per base learner
+Meta combiner: hill climb versus positive Ridge, winner selected by inner CV
+Uncertainty: cross model standard deviation (epistemic) + GP predictive sigma (calibrated)</div>
               <div class="detail-label">Results on WindsorML</div>
-              <div class="detail-text">On the 355-sample WindsorML dataset, the CV ranking is: Custom Stack 0.00779, GP 0.00946, RF 0.01418, GB 0.01624, MLP 0.01850. The Custom Stack beats the best single baseline by 17.6% in RMSE and 13.3% in MAE. At 500 or more DrivAerML samples, the weights will shift toward XGBoost and LightGBM because gradient-boosted trees scale better than GP past approximately 300 to 400 points, and the overall stack accuracy is expected to improve further.</div>
+              <div class="detail-text">On the 355 sample WindsorML dataset, the CV ranking is Custom Stack 0.00779, GP 0.00946, RF 0.01418, GB 0.01624, MLP 0.01850. The Custom Stack beats the best single model baseline by 17.6% in RMSE and 13.3% in MAE. These improvements are real out of fold improvements, not training set overfitting, because the hill climb weights are optimised exclusively on out of fold predictions from the base learners. At 500 or more DrivAerML samples, the weights will shift toward XGBoost and LightGBM and the improvement margin over GP alone is expected to widen substantially.</div>
             </div>
           </div>
         </div>
@@ -458,15 +439,12 @@ Uncertainty: cross-model standard deviation (epistemic) + GP predictive sigma (c
   </div>
 </div>
 
-<!-- ══ CALCULATOR ══ -->
+<!-- CALCULATOR -->
 <div class="page" id="page-calculator">
   <div class="page-header">
-    <div class="page-eyebrow">Calculator · Real-time Prediction</div>
-    <div class="page-title">Live Drag Coefficient<br>Predictor: Windsor Body</div>
-    <div class="page-desc">Select a model and adjust any Windsor body geometry parameter. Predictions update in real time. All five models are trained on 355 WindsorML Wall Modelled LES simulations.</div>
-    <div style="margin-top:14px">
-      <div class="approx-badge">Approximate predictor: this calculator uses simplified JS surrogate coefficients fitted to the 355 WindsorML samples, not the serialised Python models</div>
-    </div>
+    <div class="page-eyebrow">WindsorML Calculator, Real Time Prediction</div>
+    <div class="page-title">Live Drag Coefficient Predictor</div>
+    <div class="page-desc">Select any model or compare all five simultaneously. Adjust any Windsor body geometry parameter using the sliders and all model predictions update instantly. All models are trained on 355 WindsorML Wall Modelled LES simulations.</div>
   </div>
 
   <div class="content">
@@ -474,10 +452,11 @@ Uncertainty: cross-model standard deviation (epistemic) + GP predictive sigma (c
       <div class="calc-panel">
         <div class="calc-panel-head">
           <div class="calc-panel-title">Geometry parameters</div>
+          <span class="calc-approx-badge">Approximate JS surrogate, not serialised Python models</span>
         </div>
         <div style="padding:0 22px">
-          <div class="seg-group">
-            <button class="seg-btn seg-active" id="sel-all" onclick="setModel('all',this)">Best</button>
+          <div class="segmented-btn-group">
+            <button class="seg-btn active-seg" id="sel-all" onclick="setModel('all',this)">Best</button>
             <button class="seg-btn" id="sel-gp"  onclick="setModel('gp',this)">GP</button>
             <button class="seg-btn" id="sel-gb"  onclick="setModel('gb',this)">GB</button>
             <button class="seg-btn" id="sel-rf"  onclick="setModel('rf',this)">RF</button>
@@ -486,7 +465,7 @@ Uncertainty: cross-model standard deviation (epistemic) + GP predictive sigma (c
           </div>
         </div>
 
-        <div class="param-group" style="margin-top:16px">
+        <div class="param-group">
           <div class="param-group-label">Rear body geometry</div>
           <div class="param-sliders">
             <div class="slider-row">
@@ -506,14 +485,14 @@ Uncertainty: cross-model standard deviation (epistemic) + GP predictive sigma (c
           <div class="param-group-label">Front body geometry</div>
           <div class="param-sliders">
             <div class="slider-row">
-              <div class="slider-top"><span class="slider-lbl">Nose to Windshield Height Ratio</span><span class="slider-val" id="v-rhnw">0.500</span></div>
+              <div class="slider-top"><span class="slider-lbl">Nose and Windshield Height Ratio</span><span class="slider-val" id="v-rhnw">0.500</span></div>
               <input type="range" id="s-rhnw" min="0.30" max="0.70" step="0.01" value="0.50">
               <div class="slider-bounds"><span>0.30</span><span>0.70</span></div>
             </div>
             <div class="slider-row">
-              <div class="slider-top"><span class="slider-lbl">Side Taper Angle</span><span class="slider-val" id="v-sidetaper">5.0 deg</span></div>
+              <div class="slider-top"><span class="slider-lbl">Side Taper Angle</span><span class="slider-val" id="v-sidetaper">5.0°</span></div>
               <input type="range" id="s-sidetaper" min="0" max="15" step="0.5" value="5">
-              <div class="slider-bounds"><span>0 deg</span><span>15 deg</span></div>
+              <div class="slider-bounds"><span>0°</span><span>15°</span></div>
             </div>
           </div>
         </div>
@@ -527,20 +506,19 @@ Uncertainty: cross-model standard deviation (epistemic) + GP predictive sigma (c
               <div class="slider-bounds"><span>20 mm</span><span>80 mm</span></div>
             </div>
             <div class="slider-row">
-              <div class="slider-top"><span class="slider-lbl">Bottom Taper Angle</span><span class="slider-val" id="v-bottomtaper">8.0 deg</span></div>
+              <div class="slider-top"><span class="slider-lbl">Bottom Taper Angle</span><span class="slider-val" id="v-bottomtaper">8.0°</span></div>
               <input type="range" id="s-bottomtaper" min="0" max="20" step="0.5" value="8">
-              <div class="slider-bounds"><span>0 deg</span><span>20 deg</span></div>
+              <div class="slider-bounds"><span>0°</span><span>20°</span></div>
             </div>
             <div class="slider-row" style="grid-column:1/-1">
-              <div class="slider-top"><span class="slider-lbl">Frontal Area</span><span class="slider-val" id="v-frontalarea">0.1000 m2</span></div>
+              <div class="slider-top"><span class="slider-lbl">Frontal Area</span><span class="slider-val" id="v-frontalarea">0.1000 m²</span></div>
               <input type="range" id="s-frontalarea" min="0.080" max="0.120" step="0.002" value="0.100">
-              <div class="slider-bounds"><span>0.080 m2</span><span>0.120 m2</span></div>
+              <div class="slider-bounds"><span>0.080 m²</span><span>0.120 m²</span></div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Result panel -->
       <div class="result-panel">
         <div class="cd-card" id="cd-wrap">
           <div class="cd-label">Predicted Drag Coefficient</div>
@@ -552,44 +530,41 @@ Uncertainty: cross-model standard deviation (epistemic) + GP predictive sigma (c
         <div class="pred-list">
           <div class="pred-list-head">All model predictions</div>
           <div class="pred-item" id="row-gp">
-            <span class="pred-item-label"><span class="pred-dot" style="background:#1565C0"></span>Gaussian Process</span>
+            <span class="pred-item-label"><span class="pred-dot" style="background:#006876"></span>Gaussian Process</span>
             <span class="pred-val" id="pred-gp">—</span>
           </div>
           <div class="pred-item" id="row-gb">
-            <span class="pred-item-label"><span class="pred-dot" style="background:#0277BD"></span>Gradient Boosting</span>
+            <span class="pred-item-label"><span class="pred-dot" style="background:#5068a9"></span>Gradient Boosting</span>
             <span class="pred-val" id="pred-gb">—</span>
           </div>
           <div class="pred-item" id="row-rf">
-            <span class="pred-item-label"><span class="pred-dot" style="background:#00838F"></span>Random Forest</span>
+            <span class="pred-item-label"><span class="pred-dot" style="background:#7c4f00"></span>Random Forest</span>
             <span class="pred-val" id="pred-rf">—</span>
           </div>
           <div class="pred-item" id="row-nn">
-            <span class="pred-item-label"><span class="pred-dot" style="background:#4527A0"></span>Neural Network MLP</span>
+            <span class="pred-item-label"><span class="pred-dot" style="background:#6a1b9a"></span>Neural Network MLP</span>
             <span class="pred-val" id="pred-nn">—</span>
           </div>
           <div class="pred-item" id="row-nn2">
-            <span class="pred-item-label"><span class="pred-dot" style="background:#090F1C"></span>Custom Built Model</span>
+            <span class="pred-item-label"><span class="pred-dot" style="background:#1a56db"></span>Custom Built Model</span>
             <span class="pred-val" id="pred-nn2">—</span>
           </div>
         </div>
 
         <div class="unc-card">
-          <div class="unc-label">GP Uncertainty (+/- 1 sigma)</div>
-          <div class="unc-value" id="unc-value">+/- —</div>
-          <div class="unc-note">High uncertainty signals an unexplored Windsor geometry region. Run a targeted WMLES simulation at these parameters to improve model accuracy.</div>
+          <div class="unc-label">GP Uncertainty plus or minus 1 sigma</div>
+          <div class="unc-value" id="unc-value">plus or minus —</div>
+          <div class="unc-note">High uncertainty signals an unexplored Windsor geometry region. Run a targeted WMLES simulation at these parameters to improve model accuracy in this area of the design space.</div>
         </div>
 
         <div class="unc-card">
           <div class="unc-label">Model consensus</div>
           <div class="unc-value" id="consensus-value">—</div>
-          <div class="unc-note" id="consensus-note">Agreement between GP, GB and RF predictions.</div>
+          <div class="unc-note" id="consensus-note">Agreement level between GP, GB and RF predictions.</div>
         </div>
 
         <button class="share-btn" onclick="shareCalcState()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/>
-            <polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/>
-          </svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
           <span id="share-btn-text">Copy shareable link</span>
         </button>
       </div>
@@ -597,20 +572,20 @@ Uncertainty: cross-model standard deviation (epistemic) + GP predictive sigma (c
   </div>
 </div>
 
-<!-- ══ ANALYSIS ══ -->
+<!-- ANALYSIS -->
 <div class="page" id="page-analysis">
   <div class="page-header">
-    <div class="page-eyebrow">Analysis · Sensitivity</div>
-    <div class="page-title">Parameter Sensitivity<br>and Feature Analysis</div>
-    <div class="page-desc">Which Windsor body geometry parameters drive aerodynamic drag the most? How does Cd respond as each parameter varies across the WindsorML training range? Results are based on 355 high-fidelity WMLES simulations.</div>
+    <div class="page-eyebrow">Analysis and Sensitivity</div>
+    <div class="page-title">Parameter Sensitivity and Feature Analysis</div>
+    <div class="page-desc">Which Windsor body geometry parameters drive drag the most? How does Cd respond as each parameter varies across the full WindsorML training range? Sweep any parameter while holding others at the current calculator values to see model responses. Results are based on 355 high fidelity WMLES simulations.</div>
   </div>
 
   <div class="content">
-    <div class="grid-2" style="margin-bottom:20px">
+    <div class="grid-2" style="margin-bottom:22px">
       <div class="m3-card">
         <div class="card-header">
-          <div class="card-title">Feature Importance: Random Forest</div>
-          <div class="card-sub">Gini impurity-based importance. Values sum to 1.0. Based on 355 WindsorML samples.</div>
+          <div class="card-title">Feature Importance — Random Forest</div>
+          <div class="card-sub">Gini impurity based importance. Values sum to 1.0. Based on 355 WindsorML samples.</div>
         </div>
         <div class="card-body">
           <table class="fi-table">
@@ -623,46 +598,44 @@ Uncertainty: cross-model standard deviation (epistemic) + GP predictive sigma (c
       <div class="m3-card">
         <div class="card-header">
           <div class="card-title">Parameter Sweep</div>
-          <div class="card-sub">Cd response as one Windsor geometry parameter varies. All other parameters are held at current calculator values.</div>
+          <div class="card-sub">Cd response as one Windsor geometry parameter varies — all others held at current calculator slider values.</div>
         </div>
         <div class="card-body">
           <div class="filter-chips" id="sweep-tabs"></div>
           <div class="chart-wrap" style="height:240px"><canvas id="sweep-chart"></canvas></div>
-          <div class="chart-caption">Select a parameter tab above to see how each model predicts Cd as that parameter sweeps its full WindsorML range.</div>
         </div>
       </div>
     </div>
 
     <div class="m3-card">
       <div class="card-header">
-        <div class="card-title">Actual vs Predicted: All Models on 355 WindsorML Samples</div>
-        <div class="card-sub">Out-of-fold 5-fold CV predictions. The Custom Built Model sits tightest to the perfect prediction diagonal.</div>
+        <div class="card-title">Actual vs Predicted — All Models on 355 WindsorML Samples</div>
+        <div class="card-sub">Out of fold 5 fold CV predictions. The Custom Built Model sits tightest to the perfect prediction diagonal line.</div>
       </div>
       <div class="card-body">
         <div class="chart-wrap" style="height:300px"><canvas id="avp-full-chart"></canvas></div>
-        <div class="chart-caption">Black circles = Custom Stack. Blue squares = GP. Teal triangles = GB. Grey diamonds = RF. Points on the diagonal indicate perfect prediction.</div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ══ DATASET ══ -->
+<!-- DATASET -->
 <div class="page" id="page-dataset">
   <div class="page-header">
-    <div class="page-eyebrow">Dataset · Roadmap</div>
-    <div class="page-title">WindsorML Training Data<br>and Dataset Upgrade Path</div>
-    <div class="page-desc">Model accuracy scales directly with data quality and quantity. This section documents the WindsorML dataset active across all five surrogate models, along with the upgrade roadmap to DrivAerML and beyond.</div>
+    <div class="page-eyebrow">Dataset and Roadmap</div>
+    <div class="page-title">WindsorML Training Data and Dataset Upgrade Path</div>
+    <div class="page-desc">Model accuracy scales directly with data quality and quantity. This section documents the WindsorML dataset currently active across all five surrogate models, along with the planned upgrade roadmap from WindsorML through DrivAerML to DrivAerNet as sample counts increase and model requirements evolve.</div>
   </div>
 
   <div class="content">
     <div class="dataset-grid fade">
       <div class="ds-card">
         <div class="ds-card-head">
-          <div class="ds-status" style="color:var(--red)">Retired and superseded</div>
+          <div class="ds-status" style="color:#ba1a1a">Retired and superseded</div>
           <div class="ds-name">Synthetic CFD Dataset</div>
         </div>
         <div class="ds-body">
-          <p class="ds-desc">Physics-consistent synthetic aerodynamic data used to bootstrap the surrogate pipeline during early development. Generated using simplified analytical models rather than high-fidelity CFD. Superseded by WindsorML high-fidelity CFD data. No longer used for any model training and not available for download.</p>
+          <p class="ds-desc">Physics consistent synthetic aerodynamic data used to bootstrap the surrogate pipeline during early development when no real CFD data was available. Constructed by applying known aerodynamic scaling laws to produce plausible Cd values across the Windsor parameter space. Entirely superseded by WindsorML high fidelity CFD data and no longer used for any model training in the current pipeline.</p>
           <div class="ds-tags">
             <span class="ds-tag">50 samples</span>
             <span class="ds-tag">6 inputs</span>
@@ -671,35 +644,34 @@ Uncertainty: cross-model standard deviation (epistemic) + GP predictive sigma (c
           </div>
         </div>
       </div>
-
       <div class="ds-card">
         <div class="ds-card-head">
-          <div class="ds-status" style="color:var(--green)">Current: active training data</div>
+          <div class="ds-status" style="color:#1b5e20">Current and active training data</div>
           <div class="ds-name">WindsorML</div>
         </div>
         <div class="ds-body">
-          <p class="ds-desc">355 high-fidelity Wall-Modelled LES simulations on the Windsor bluff body geometry. Each simulation used more than 280 million mesh cells run on GPU-native solvers to ensure the highest possible accuracy. Available on HuggingFace under CC-BY-SA license. All five surrogate models are trained and cross-validated on this dataset using the 7 dimensionless geometry parameters. Published at NeurIPS 2024 by Ashton et al.</p>
+          <p class="ds-desc">355 high fidelity Wall Modelled LES simulations performed on the Windsor body across a Latin hypercube sampled design space. Available on HuggingFace under CC BY SA. Each simulation used more than 280 million mesh cells to ensure the highest possible accuracy and correlation to experimental data from the 4th AutoCFD workshop. All five surrogate models are trained and cross validated on this dataset using the 7 dimensionless Windsor geometry parameters.</p>
           <div class="ds-tags">
             <span class="ds-tag active">355 samples</span>
             <span class="ds-tag active">7 parameters</span>
             <span class="ds-tag active">WMLES CFD</span>
-            <span class="ds-tag active">CC-BY-SA</span>
+            <span class="ds-tag active">CC BY SA</span>
             <span class="ds-tag active">Active</span>
           </div>
         </div>
       </div>
-
       <div class="ds-card">
         <div class="ds-card-head">
-          <div class="ds-status" style="color:var(--text3)">Future: access pending</div>
+          <div class="ds-status" style="color:#74777f">Future and access pending</div>
           <div class="ds-name">DrivAerML</div>
         </div>
         <div class="ds-body">
-          <p class="ds-desc">500 parametrically morphed DrivAer notchback variants. A realistic production car geometry used by major automotive OEMs for aerodynamic research. Industrial-grade scale-resolving CFD with the best geometric match to real sedan bodies. Published by Ashton et al. alongside WindsorML. Available on HuggingFace under CC-BY-SA license. Planned as the next training dataset upgrade for this surrogate suite.</p>
+          <p class="ds-desc">500 parametrically morphed variants of the DrivAer notchback generic vehicle, a realistic production car geometry used by major OEMs for aerodynamic research. Uses industrial grade hybrid RANS LES scale resolving CFD with automated meshing workflows producing grids of approximately 160 million cells per simulation. Provides the best geometric match to real production sedan bodies of any publicly available CFD dataset and is available on HuggingFace under CC BY SA.</p>
           <div class="ds-tags">
             <span class="ds-tag">500 samples</span>
             <span class="ds-tag">Real car body</span>
-            <span class="ds-tag">CC-BY-SA</span>
+            <span class="ds-tag">CC BY SA</span>
+            <span class="ds-tag">HuggingFace</span>
             <span class="ds-tag">Pending</span>
           </div>
         </div>
@@ -708,52 +680,52 @@ Uncertainty: cross-model standard deviation (epistemic) + GP predictive sigma (c
 
     <div class="info-box fade d1">
       <div class="info-box-title">Why this approach reduces CFD simulation count</div>
-      Traditional aerodynamic design requires running a CFD simulation for every design variant, a process that takes 6 to 48 hours per run on a high-performance computing cluster. The surrogate model approach breaks this barrier entirely. The 355 WindsorML high-fidelity WMLES runs train a mathematical model that approximates the full CFD solver. Once trained, the surrogate predicts Cd in under one millisecond for any Windsor parameter combination, enabling rapid screening of thousands of design variants without any additional CFD cost. The Gaussian Process additionally provides uncertainty estimates enabling active learning, where the next CFD simulation is always placed at the point of highest model uncertainty rather than chosen arbitrarily. This Bayesian optimisation strategy can reduce the simulation count required to find an optimal design by five to ten times compared to random or grid sampling approaches, representing a significant reduction in computational budget for any automotive aerodynamics programme.
+      Traditional aerodynamic design requires running a full CFD simulation for every design variant considered, a process that takes between 6 and 48 hours per run on a high performance computing cluster. At that rate, exploring even 100 Windsor body variants would consume months of compute time and significant cost. The surrogate model approach breaks this barrier entirely. The 355 WindsorML high fidelity WMLES runs are used once to train a mathematical model that approximates the full CFD solver across the entire Windsor parameter space. Once trained, the surrogate predicts Cd in under one millisecond for any Windsor parameter combination, enabling rapid screening of thousands of design variants at negligible computational cost. The Gaussian Process additionally provides calibrated uncertainty estimates that enable active learning, where the next CFD simulation is always placed at the point of highest model uncertainty rather than chosen arbitrarily. This Bayesian optimisation strategy can reduce the total simulation count required to find an optimal design by five to ten times compared to random or grid sampling strategies, making high fidelity aerodynamic surrogate modelling accessible to teams without access to unlimited HPC resources.
     </div>
 
     <div class="section-head">
       <div class="section-title">WindsorML Parameter Definitions</div>
-      <div class="section-sub">The 7 dimensionless Windsor body geometry parameters used as model inputs</div>
+      <div class="section-sub">The 7 dimensionless Windsor body geometry parameters used as model inputs across all five surrogate models</div>
     </div>
 
     <div class="param-def-grid fade d2">
       <div class="param-def-item">
         <div class="param-def-name">ratio_length_back_fast (rlbf)</div>
-        <div class="param-def-text">Dimensionless ratio of the rear fastback length to the total body length. Lower values produce a steeper, more abrupt rear end with earlier boundary layer separation. Higher values create a longer, more gradual taper with delayed separation and typically lower total drag, up to the point where diffuser stall reverses the benefit.</div>
+        <div class="param-def-text">Dimensionless ratio of the rear fastback length to the total body length. Lower values produce a steeper and more abrupt rear end with earlier flow separation. Higher values create a longer and more gradual taper that delays separation, generally reducing drag at moderate values before increasing it again at extremes.</div>
       </div>
       <div class="param-def-item">
         <div class="param-def-name">ratio_height_nose_windshield (rhnw)</div>
-        <div class="param-def-text">Height ratio between the nose leading edge and the windshield base. Controls how bluff the front face appears to the oncoming flow and how aggressively the streamlines transition to the windshield plane. Higher values represent a more aggressive front transition angle.</div>
+        <div class="param-def-text">Height ratio between the nose leading edge and the windshield base. Controls how bluff the front face appears to the oncoming flow and how aggressively the streamlines transition onto the windshield plane. Lower values produce a more gradual front transition while higher values produce a more abrupt step at the windshield base.</div>
       </div>
       <div class="param-def-item">
         <div class="param-def-name">ratio_height_fast_back (rhfb)</div>
-        <div class="param-def-text">Height ratio of the fastback surface relative to the overall body height. Governs the severity of the rear slope angle and the onset of trailing-edge separation from the roof surface. This parameter has the second-highest importance score at 17.8% behind the rear fastback ratio.</div>
+        <div class="param-def-text">Height ratio of the fastback surface relative to the overall body height. Governs the severity of the rear slope angle and the onset of trailing edge separation from the roof surface. This parameter interacts strongly with rlbf because both govern the rear geometry that determines wake structure and base pressure coefficient.</div>
       </div>
       <div class="param-def-item">
         <div class="param-def-name">side_taper</div>
-        <div class="param-def-text">Side wall taper angle in degrees. Positive taper narrows the Windsor body toward the rear, reducing the width of the separated wake and typically lowering total drag by reducing the effective base area exposed to low-pressure wake flow.</div>
+        <div class="param-def-text">Side wall taper angle in degrees. Positive taper progressively narrows the Windsor body toward the rear, reducing the width of the separated wake region and typically lowering total drag. Excessive taper can induce asymmetric separation that reverses the drag benefit above approximately 12 to 15 degrees depending on rear geometry.</div>
       </div>
       <div class="param-def-item">
         <div class="param-def-name">clearance</div>
-        <div class="param-def-text">Ground clearance in millimetres between the lowest body surface and the ground plane. Affects underbody flow velocity and the balance between base pressure recovery and underbody suction force. Interacts with the bottom taper angle to determine diffuser effectiveness.</div>
+        <div class="param-def-text">Ground clearance in millimetres between the lowest body surface and the ground plane. Affects underbody flow velocity and the balance between base pressure recovery and underbody suction force. Lower clearance accelerates underbody flow, increasing the Venturi effect, while higher clearance reduces it. The optimal clearance depends strongly on the underbody diffuser angle.</div>
       </div>
       <div class="param-def-item">
         <div class="param-def-name">bottom_taper_angle</div>
-        <div class="param-def-text">Angle of the underbody diffuser ramp in degrees. Higher angles increase underbody pressure recovery but risk diffuser stall and flow separation above approximately 12 degrees, which reverses the drag benefit. The optimal angle depends on ground clearance and body length.</div>
+        <div class="param-def-text">Angle of the underbody diffuser ramp in degrees. Higher angles increase underbody pressure recovery by decelerating the accelerated underbody flow more aggressively, but risk diffuser stall and catastrophic flow separation above approximately 12 degrees. Diffuser stall reverses the drag benefit entirely and can increase drag above the baseline squareback configuration.</div>
       </div>
       <div class="param-def-item" style="grid-column:1/-1">
         <div class="param-def-name">frontal_area (m squared)</div>
-        <div class="param-def-text">Projected frontal area in square metres at Windsor body scale. Directly scales the pressure drag component according to the definition: Cd equals drag force divided by the product of 0.5 times air density times velocity squared times frontal area. Windsor body values range from approximately 0.080 to 0.120 m squared across the 355 WindsorML samples.</div>
+        <div class="param-def-text">Projected frontal area in square metres at Windsor body scale. Directly scales the pressure drag component because the drag force Fd equals Cd times 0.5 times air density times velocity squared times frontal area A. Windsor body values in the dataset range from approximately 0.080 to 0.120 metres squared. Changes in frontal area that alter body proportions also indirectly affect the flow field and therefore Cd itself, making this an interaction variable with the geometry ratios.</div>
       </div>
     </div>
 
     <div class="section-head">
-      <div class="section-title">WindsorML Training Data: First 15 Samples</div>
-      <div class="section-sub">Wall-Modelled LES Cd values. Parameters are dimensionless Windsor body geometry ratios as defined in the WindsorML dataset specification.</div>
+      <div class="section-title">WindsorML Training Data — First 15 Samples</div>
+      <div class="section-sub">Wall Modelled LES Cd values. Parameters are dimensionless Windsor body geometry ratios as defined in the WindsorML dataset specification.</div>
     </div>
 
     <div class="data-table-wrap fade d3">
-      <div class="data-table-label">Training samples: first 15 of 355</div>
+      <div class="data-table-label">Training samples — first 15 of 355</div>
       <table class="dt">
         <thead>
           <tr>
@@ -761,7 +733,7 @@ Uncertainty: cross-model standard deviation (epistemic) + GP predictive sigma (c
             <th>rlbf</th><th>rhnw</th><th>rhfb</th>
             <th>Side Taper (deg)</th><th>Clearance (mm)</th>
             <th>Bot. Taper (deg)</th><th>FA (m2)</th>
-            <th>C<sub>d</sub></th>
+            <th>Cd</th>
           </tr>
         </thead>
         <tbody id="data-tbody"></tbody>
@@ -771,7 +743,6 @@ Uncertainty: cross-model standard deviation (epistemic) + GP predictive sigma (c
 </div>
 
 </main>
-
 <script src="dashboard.js"></script>
 </body>
 </html>
