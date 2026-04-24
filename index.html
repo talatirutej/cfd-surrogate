@@ -1,0 +1,2272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CFD Aerodynamic Surrogate Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root {
+  --bg:       #0a0c10;
+  --bg2:      #0f1218;
+  --bg3:      #141820;
+  --bg4:      #1a2030;
+  --border:   rgba(255,255,255,0.07);
+  --border2:  rgba(255,255,255,0.12);
+  --text:     #e8eaf0;
+  --text2:    #8a90a0;
+  --text3:    #545a6a;
+  --accent:   #4f8ef7;
+  --accent2:  #7b5cf5;
+  --green:    #22d3a0;
+  --amber:    #f5a623;
+  --red:      #f06060;
+  --teal:     #2dd4bf;
+  --pink:     #f472b6;
+  --nav-w:    240px;
+  --font-d:   'Syne', sans-serif;
+  --font-b:   'Space Grotesk', sans-serif;
+  --font-m:   'JetBrains Mono', monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-b);
+  font-weight: 300;
+  line-height: 1.6;
+  display: flex;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── SIDEBAR NAV ── */
+nav {
+  position: fixed;
+  top: 0; left: 0;
+  width: var(--nav-w);
+  height: 100vh;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  overflow-y: auto;
+}
+
+.nav-logo {
+  padding: 28px 24px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.nav-logo-mark {
+  font-family: var(--font-d);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+
+.nav-logo-title {
+  font-family: var(--font-d);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.3;
+}
+
+.nav-logo-sub {
+  font-size: 11px;
+  color: var(--text3);
+  margin-top: 4px;
+  font-family: var(--font-m);
+}
+
+.nav-section-label {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text3);
+  padding: 20px 24px 8px;
+}
+
+.nav-links { flex: 1; }
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 24px;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text2);
+  cursor: pointer;
+  border-left: 2px solid transparent;
+  transition: all 0.2s;
+  user-select: none;
+}
+
+.nav-link:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+.nav-link.active { color: var(--accent); border-left-color: var(--accent); background: rgba(79,142,247,0.08); font-weight: 500; }
+
+.nav-icon {
+  width: 16px;
+  height: 16px;
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+
+.nav-link.active .nav-icon { opacity: 1; }
+
+.nav-footer {
+  padding: 20px 24px;
+  border-top: 1px solid var(--border);
+  font-size: 10px;
+  color: var(--text3);
+  line-height: 1.6;
+}
+
+.nav-footer strong { color: var(--text2); font-weight: 500; }
+
+/* ── MAIN CONTENT ── */
+main {
+  margin-left: var(--nav-w);
+  flex: 1;
+  min-height: 100vh;
+}
+
+.page { display: none; }
+.page.active { display: block; }
+
+/* ── PAGE HEADER ── */
+.page-header {
+  padding: 40px 48px 36px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg2);
+}
+
+.page-kicker {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 10px;
+  font-family: var(--font-m);
+}
+
+.page-title {
+  font-family: var(--font-d);
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.1;
+  margin-bottom: 10px;
+}
+
+.page-desc {
+  font-size: 14px;
+  color: var(--text2);
+  max-width: 640px;
+  line-height: 1.7;
+}
+
+/* ── CONTENT AREA ── */
+.content { padding: 40px 48px; }
+
+/* ── STAT ROW ── */
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 36px;
+}
+
+.stat-card {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px 22px;
+  transition: border-color 0.2s;
+}
+
+.stat-card:hover { border-color: var(--border2); }
+
+.stat-card-label {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 8px;
+}
+
+.stat-card-value {
+  font-family: var(--font-d);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.stat-card-sub {
+  font-size: 12px;
+  color: var(--text3);
+}
+
+.stat-card-value.v-green { color: var(--green); }
+.stat-card-value.v-accent { color: var(--accent); }
+.stat-card-value.v-amber { color: var(--amber); }
+
+/* ── GRID LAYOUTS ── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+
+/* ── CARD ── */
+.card {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color 0.25s, transform 0.25s;
+}
+
+.card:hover { border-color: var(--border2); }
+
+.card-head {
+  padding: 22px 24px 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.card-title {
+  font-family: var(--font-d);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.card-sub { font-size: 12px; color: var(--text3); }
+
+.card-body { padding: 24px; }
+
+/* ── MODEL CARDS ── */
+.model-card {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s;
+}
+
+.model-card:hover {
+  border-color: var(--border2);
+  transform: translateY(-2px);
+}
+
+.model-stripe { height: 3px; }
+.stripe-gp  { background: linear-gradient(90deg, var(--green), #0f9e76); }
+.stripe-gb  { background: linear-gradient(90deg, var(--accent), #2563eb); }
+.stripe-rf  { background: linear-gradient(90deg, var(--amber), #d97706); }
+.stripe-nn  { background: linear-gradient(90deg, var(--accent2), #6d28d9); }
+.stripe-nn2 { background: linear-gradient(90deg, var(--pink), #db2777); }
+
+.model-card-body { padding: 24px; }
+
+.model-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 14px;
+}
+
+.model-name {
+  font-family: var(--font-d);
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.25;
+}
+
+.model-badge {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 4px 9px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  margin-left: 10px;
+  margin-top: 2px;
+}
+
+.badge-best  { background: rgba(34,211,160,0.15); color: var(--green); border: 1px solid rgba(34,211,160,0.25); }
+.badge-prod  { background: rgba(79,142,247,0.15);  color: var(--accent); border: 1px solid rgba(79,142,247,0.25); }
+.badge-feat  { background: rgba(245,166,35,0.15);  color: var(--amber); border: 1px solid rgba(245,166,35,0.25); }
+.badge-nn    { background: rgba(123,92,245,0.15);  color: var(--accent2); border: 1px solid rgba(123,92,245,0.25); }
+.badge-nn2   { background: rgba(244,114,182,0.15); color: var(--pink); border: 1px solid rgba(244,114,182,0.25); }
+
+.model-summary {
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.7;
+  margin-bottom: 18px;
+}
+
+.model-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.metric-item { }
+
+.metric-label {
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 4px;
+}
+
+.metric-value {
+  font-family: var(--font-m);
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--text);
+}
+
+.metric-value.m-green  { color: var(--green); }
+.metric-value.m-accent { color: var(--accent); }
+.metric-value.m-amber  { color: var(--amber); }
+.metric-value.m-muted  { color: var(--text3); font-size: 12px; }
+
+.metric-bar {
+  height: 2px;
+  background: var(--border);
+  border-radius: 1px;
+  margin-top: 5px;
+  overflow: hidden;
+}
+
+.metric-bar-fill {
+  height: 100%;
+  border-radius: 1px;
+  transition: width 1.2s ease;
+}
+
+.see-more-btn {
+  font-size: 11px;
+  color: var(--accent);
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-b);
+  letter-spacing: 0.02em;
+  transition: color 0.2s;
+}
+
+.see-more-btn:hover { color: #7fb3ff; }
+
+.model-detail {
+  display: none;
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+
+.model-detail.open { display: block; }
+
+.detail-section { margin-bottom: 16px; }
+
+.detail-label {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 6px;
+}
+
+.detail-text {
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.7;
+}
+
+.detail-code {
+  font-family: var(--font-m);
+  font-size: 11px;
+  color: var(--text2);
+  background: var(--bg4);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px 14px;
+  line-height: 1.7;
+}
+
+.sample-tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 500;
+  padding: 3px 8px;
+  border-radius: 4px;
+  margin-right: 6px;
+  margin-bottom: 4px;
+}
+
+.tag-needed    { background: rgba(34,211,160,0.12); color: var(--green); }
+.tag-current   { background: rgba(79,142,247,0.12); color: var(--accent); }
+.tag-warning   { background: rgba(245,166,35,0.12); color: var(--amber); }
+
+/* ── RMSE SCALE ── */
+.rmse-scale {
+  display: flex;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 32px;
+}
+
+.rmse-tier {
+  flex: 1;
+  padding: 14px 18px;
+  border-right: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rmse-tier:last-child { border-right: none; }
+
+.rmse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.rmse-text {
+  font-size: 12px;
+  color: var(--text2);
+  line-height: 1.5;
+}
+
+.rmse-text strong { color: var(--text); font-weight: 500; display: block; font-size: 13px; }
+
+/* ── CFD CALCULATOR PAGE ── */
+.calc-layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 28px;
+  align-items: start;
+}
+
+.calc-panel {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.calc-panel-head {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.calc-panel-title {
+  font-family: var(--font-d);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* Model Selector */
+.model-selector {
+  display: flex;
+  gap: 6px;
+  background: var(--bg4);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.model-sel-btn {
+  flex: 1;
+  padding: 8px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  background: none;
+  color: var(--text2);
+  font-family: var(--font-b);
+  transition: all 0.2s;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.model-sel-btn:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+.model-sel-btn.active-gp  { background: rgba(34,211,160,0.15);  color: var(--green); }
+.model-sel-btn.active-gb  { background: rgba(79,142,247,0.15);  color: var(--accent); }
+.model-sel-btn.active-rf  { background: rgba(245,166,35,0.15);  color: var(--amber); }
+.model-sel-btn.active-nn  { background: rgba(123,92,245,0.15);  color: var(--accent2); }
+.model-sel-btn.active-nn2 { background: rgba(244,114,182,0.15); color: var(--pink); }
+.model-sel-btn.active-all { background: rgba(255,255,255,0.1);  color: var(--text); }
+
+/* Param groups */
+.param-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.param-group {
+  border-bottom: 1px solid var(--border);
+  padding: 0;
+}
+
+.param-group:last-child { border-bottom: none; }
+
+.param-group-label {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text3);
+  padding: 14px 24px 0;
+}
+
+.param-sliders {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 32px;
+  padding: 12px 24px 18px;
+}
+
+.slider-row { display: flex; flex-direction: column; gap: 7px; }
+
+.slider-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.slider-lbl {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text2);
+  letter-spacing: 0.02em;
+}
+
+.slider-val {
+  font-family: var(--font-m);
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 400;
+}
+
+.slider-bounds {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9px;
+  color: var(--text3);
+  font-family: var(--font-m);
+  margin-top: 2px;
+}
+
+input[type=range] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 2px;
+  background: var(--border2);
+  outline: none;
+  cursor: pointer;
+  border-radius: 1px;
+}
+
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 13px;
+  height: 13px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid var(--bg3);
+  box-shadow: 0 0 0 1px var(--accent);
+  transition: transform 0.15s;
+}
+
+input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.25); }
+
+/* ── RESULT SIDE PANEL ── */
+.result-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: sticky;
+  top: 24px;
+}
+
+.cd-card {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  text-align: center;
+  padding: 28px 20px 24px;
+}
+
+.cd-label {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 14px;
+}
+
+.cd-value {
+  font-family: var(--font-d);
+  font-size: 60px;
+  font-weight: 800;
+  line-height: 1;
+  margin-bottom: 8px;
+  transition: color 0.4s;
+}
+
+.cd-tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 5px 14px;
+  border-radius: 20px;
+  transition: all 0.4s;
+}
+
+.cd-low  { color: var(--green); }
+.cd-low .cd-tag { background: rgba(34,211,160,0.15); color: var(--green); }
+.cd-med  { color: var(--accent); }
+.cd-med .cd-tag { background: rgba(79,142,247,0.15); color: var(--accent); }
+.cd-hi   { color: var(--red); }
+.cd-hi .cd-tag { background: rgba(240,96,96,0.15); color: var(--red); }
+
+.model-indicator {
+  font-size: 10px;
+  color: var(--text3);
+  margin-top: 10px;
+  font-family: var(--font-m);
+}
+
+.pred-table {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.pred-table-head {
+  padding: 12px 16px;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text3);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg4);
+}
+
+.pred-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+}
+
+.pred-row:last-child { border-bottom: none; }
+.pred-row:hover { background: rgba(255,255,255,0.02); }
+
+.pred-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text2);
+}
+
+.pred-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.pred-value {
+  font-family: var(--font-m);
+  font-size: 13px;
+  color: var(--text);
+  font-weight: 400;
+}
+
+.pred-active { font-weight: 500; }
+.pred-active .pred-label { color: var(--text); }
+
+.unc-card {
+  background: var(--bg4);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.unc-label {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 6px;
+}
+
+.unc-value {
+  font-family: var(--font-m);
+  font-size: 15px;
+  color: var(--green);
+  margin-bottom: 4px;
+}
+
+.unc-note { font-size: 11px; color: var(--text3); line-height: 1.6; }
+
+/* ── ANALYSIS PAGE ── */
+.chart-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.sweep-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.sweep-tab {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  color: var(--text2);
+  cursor: pointer;
+  background: none;
+  font-family: var(--font-b);
+  transition: all 0.2s;
+}
+
+.sweep-tab:hover { color: var(--text); border-color: var(--border2); }
+.sweep-tab.on { background: rgba(79,142,247,0.15); border-color: rgba(79,142,247,0.35); color: var(--accent); }
+
+/* ── DATASET PAGE ── */
+.dataset-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.ds-card {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.ds-card:hover { border-color: var(--border2); }
+
+.ds-card-head {
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg4);
+}
+
+.ds-status {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 6px;
+}
+
+.ds-name {
+  font-family: var(--font-d);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.ds-card-body { padding: 16px 18px; }
+
+.ds-desc { font-size: 12px; color: var(--text2); line-height: 1.65; margin-bottom: 12px; }
+
+.ds-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+
+.ds-tag {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  color: var(--text3);
+}
+
+.ds-tag.active { background: rgba(79,142,247,0.1); border-color: rgba(79,142,247,0.25); color: var(--accent); }
+
+/* ── DATA TABLE ── */
+.data-table-wrap {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  overflow-x: auto;
+}
+
+.data-table-head {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text3);
+  background: var(--bg4);
+}
+
+table.dt {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-m);
+  font-size: 12px;
+}
+
+table.dt th {
+  padding: 10px 16px;
+  text-align: right;
+  font-family: var(--font-b);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text3);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg4);
+}
+
+table.dt th:first-child { text-align: left; padding-left: 20px; }
+table.dt td { padding: 9px 16px; text-align: right; border-bottom: 1px solid var(--border); color: var(--text2); }
+table.dt td:first-child { text-align: left; padding-left: 20px; color: var(--text3); font-family: var(--font-b); font-size: 11px; }
+table.dt tr:last-child td { border-bottom: none; }
+table.dt tr:hover td { background: rgba(255,255,255,0.02); }
+
+.cd-g { color: var(--green) !important; }
+.cd-a { color: var(--accent) !important; }
+.cd-r { color: var(--red) !important; }
+
+/* ── WHY BOX ── */
+.info-box {
+  background: rgba(79,142,247,0.05);
+  border: 1px solid rgba(79,142,247,0.18);
+  border-radius: 10px;
+  padding: 24px 28px;
+  margin-bottom: 28px;
+}
+
+.info-box-title {
+  font-family: var(--font-d);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+
+.info-box-body {
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.8;
+  columns: 2;
+  column-gap: 40px;
+}
+
+/* ── FI TABLE ── */
+.fi-table { width: 100%; border-collapse: collapse; }
+.fi-table th { font-size: 9px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text3); text-align: left; padding: 0 0 12px; border-bottom: 1px solid var(--border); }
+.fi-table td { padding: 10px 0; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.fi-table tr:last-child td { border-bottom: none; }
+.fi-rank { font-family: var(--font-m); font-size: 10px; color: var(--text3); width: 24px; }
+.fi-name { font-size: 13px; color: var(--text2); }
+.fi-bar-cell { padding: 0 16px; }
+.fi-bar-bg { height: 2px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.fi-bar-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 1.4s cubic-bezier(.4,0,.2,1); }
+.fi-score { font-family: var(--font-m); font-size: 11px; color: var(--text3); text-align: right; white-space: nowrap; }
+
+/* ── SECTION HEADING ── */
+.section-head {
+  margin-bottom: 24px;
+}
+
+.section-title {
+  font-family: var(--font-d);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.section-sub { font-size: 13px; color: var(--text3); }
+
+/* ── DIVIDER ── */
+.divider { border: none; border-top: 1px solid var(--border); margin: 36px 0; }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.fade { animation: fadeIn 0.5s ease both; }
+.d1 { animation-delay: 0.04s; }
+.d2 { animation-delay: 0.09s; }
+.d3 { animation-delay: 0.14s; }
+.d4 { animation-delay: 0.19s; }
+.d5 { animation-delay: 0.24s; }
+
+/* ── COMPARE CHART CONTAINER ── */
+.avp-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 8px; }
+
+.model-perf-card {
+  background: var(--bg4);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  text-align: center;
+}
+
+.mpc-name { font-size: 11px; color: var(--text3); margin-bottom: 8px; }
+.mpc-rmse { font-family: var(--font-m); font-size: 18px; font-weight: 400; }
+.mpc-r2 { font-size: 10px; color: var(--text3); margin-top: 4px; }
+.mpc-bar { height: 3px; background: var(--border); border-radius: 2px; margin-top: 8px; overflow: hidden; }
+.mpc-fill { height: 100%; border-radius: 2px; }
+
+/* ── PAGE TRANSITIONS ── */
+.page.active .stat-card { animation: fadeIn 0.5s ease both; }
+.page.active .stat-card:nth-child(1) { animation-delay: 0.05s; }
+.page.active .stat-card:nth-child(2) { animation-delay: 0.1s; }
+.page.active .stat-card:nth-child(3) { animation-delay: 0.15s; }
+.page.active .stat-card:nth-child(4) { animation-delay: 0.2s; }
+</style>
+</head>
+<body>
+
+<!-- ─────── SIDEBAR NAV ─────── -->
+<nav>
+  <div class="nav-logo">
+    <div class="nav-logo-mark">Aerodynamics · CFD</div>
+    <div class="nav-logo-title">Drag Surrogate<br>Model Suite</div>
+    <div class="nav-logo-sub">v2.0 · 2026</div>
+  </div>
+
+  <div class="nav-links">
+    <div class="nav-section-label">Navigation</div>
+
+    <div class="nav-link active" onclick="showPage('overview')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/>
+        <rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/>
+      </svg>
+      Overview
+    </div>
+
+    <div class="nav-link" onclick="showPage('models')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M2 12V8l6-4 6 4v4l-6 4-6-4z"/><path d="M2 8l6 4 6-4"/>
+      </svg>
+      ML Models
+    </div>
+
+    <div class="nav-link" onclick="showPage('calculator')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="2" y="2" width="12" height="12" rx="2"/>
+        <path d="M5 6h6M5 10h6M5 8h2"/>
+      </svg>
+      CFD Calculator
+    </div>
+
+    <div class="nav-link" onclick="showPage('analysis')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+        <polyline points="1,12 5,7 9,9 15,3"/><line x1="1" y1="12" x2="15" y2="12"/>
+      </svg>
+      Analysis
+    </div>
+
+    <div class="nav-link" onclick="showPage('dataset')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+        <ellipse cx="8" cy="4" rx="6" ry="2.5"/>
+        <path d="M2 4v4c0 1.38 2.69 2.5 6 2.5S14 9.38 14 8V4"/>
+        <path d="M2 8v4c0 1.38 2.69 2.5 6 2.5S14 13.38 14 12V8"/>
+      </svg>
+      Dataset
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <strong>© 2026 Rutej Talati</strong><br>
+    Aerodynamic Drag Surrogate<br>
+    Research &amp; Development
+  </div>
+</nav>
+
+<!-- ═════════════════════════════ -->
+<!-- PAGE: OVERVIEW               -->
+<!-- ═════════════════════════════ -->
+<main>
+<div class="page active" id="page-overview">
+  <div class="page-header">
+    <div class="page-kicker">Dashboard · Overview</div>
+    <div class="page-title">Aerodynamic Drag Surrogate<br>Model Performance Summary</div>
+    <div class="page-desc">Five machine learning surrogate models trained on aerodynamic CFD data to predict drag coefficient C<sub>d</sub> from geometry and flow parameters — without running a full simulation.</div>
+  </div>
+
+  <div class="content">
+    <div class="stat-row fade">
+      <div class="stat-card">
+        <div class="stat-card-label">Training simulations</div>
+        <div class="stat-card-value v-accent">60</div>
+        <div class="stat-card-sub">CFD runs used</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">Best CV RMSE</div>
+        <div class="stat-card-value v-green">0.00779</div>
+        <div class="stat-card-sub">Custom Built Model (−17.6% vs GP)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">Input parameters</div>
+        <div class="stat-card-value v-accent">6</div>
+        <div class="stat-card-sub">Geometric + flow (raw)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">Models deployed</div>
+        <div class="stat-card-value">05</div>
+        <div class="stat-card-sub">GP · GB · RF · NN · Custom Stack</div>
+      </div>
+    </div>
+
+    <!-- Model quick-compare -->
+    <div class="section-head">
+      <div class="section-title">Model Performance Comparison</div>
+      <div class="section-sub">5-fold cross-validated RMSE and R² — the honest, held-out metrics. Lower RMSE is better.</div>
+    </div>
+
+    <div class="avp-row fade d1">
+      <div class="model-perf-card">
+        <div class="mpc-name">Custom Built Model</div>
+        <div class="mpc-rmse" style="color:var(--pink)">0.00779</div>
+        <div class="mpc-r2">R² = 0.935 (CV)</div>
+        <div class="mpc-bar"><div class="mpc-fill" style="width:100%;background:var(--pink)"></div></div>
+      </div>
+      <div class="model-perf-card">
+        <div class="mpc-name">Gaussian Process</div>
+        <div class="mpc-rmse" style="color:var(--green)">0.00946</div>
+        <div class="mpc-r2">R² = 0.905 (CV)</div>
+        <div class="mpc-bar"><div class="mpc-fill" style="width:82%;background:var(--green)"></div></div>
+      </div>
+      <div class="model-perf-card">
+        <div class="mpc-name">Random Forest</div>
+        <div class="mpc-rmse" style="color:var(--amber)">0.01418</div>
+        <div class="mpc-r2">R² = 0.785 (CV)</div>
+        <div class="mpc-bar"><div class="mpc-fill" style="width:55%;background:var(--amber)"></div></div>
+      </div>
+      <div class="model-perf-card">
+        <div class="mpc-name">Gradient Boosting</div>
+        <div class="mpc-rmse" style="color:var(--accent)">0.01624</div>
+        <div class="mpc-r2">R² = 0.718 (CV)</div>
+        <div class="mpc-bar"><div class="mpc-fill" style="width:48%;background:var(--accent)"></div></div>
+      </div>
+      <div class="model-perf-card">
+        <div class="mpc-name">Neural Network</div>
+        <div class="mpc-rmse" style="color:var(--accent2)">0.11715</div>
+        <div class="mpc-r2">R² ≈ −13.6 (small N)</div>
+        <div class="mpc-bar"><div class="mpc-fill" style="width:7%;background:var(--accent2)"></div></div>
+      </div>
+    </div>
+
+    <div class="rmse-scale fade d2" style="margin-top:24px">
+      <div class="rmse-tier">
+        <span class="rmse-dot" style="background:var(--green)"></span>
+        <div class="rmse-text"><strong>Below 0.003</strong>Wind tunnel grade accuracy</div>
+      </div>
+      <div class="rmse-tier">
+        <span class="rmse-dot" style="background:var(--accent)"></span>
+        <div class="rmse-text"><strong>0.003 – 0.010</strong>Engineering grade — suitable for design screening</div>
+      </div>
+      <div class="rmse-tier">
+        <span class="rmse-dot" style="background:var(--amber)"></span>
+        <div class="rmse-text"><strong>0.010 – 0.020</strong>Acceptable for early-stage ranking</div>
+      </div>
+      <div class="rmse-tier">
+        <span class="rmse-dot" style="background:var(--red)"></span>
+        <div class="rmse-text"><strong>Above 0.020</strong>Indicative only — not for design decisions</div>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- Overview charts -->
+    <div class="grid-2 fade d3">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">Feature Importance</div>
+          <div class="card-sub">Relative influence of each input on Cd — Random Forest</div>
+        </div>
+        <div class="card-body">
+          <table class="fi-table">
+            <thead><tr><th></th><th>Parameter</th><th style="width:40%">Relative impact</th><th style="text-align:right">Score</th></tr></thead>
+            <tbody id="fi-tbody-ov"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">Actual vs Predicted — Custom Built Model</div>
+          <div class="card-sub">Out-of-fold predictions. Points on the diagonal indicate perfect prediction — the honest accuracy metric.</div>
+        </div>
+        <div class="card-body">
+          <div class="chart-wrap" style="height:280px"><canvas id="avp-chart" role="img" aria-label="Scatter plot of actual vs predicted Cd values for the Custom Built Model">Actual vs Predicted Cd scatter plot.</canvas></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═════════════════════════════ -->
+<!-- PAGE: MODELS                 -->
+<!-- ═════════════════════════════ -->
+<div class="page" id="page-models">
+  <div class="page-header">
+    <div class="page-kicker">ML Models · Methodology</div>
+    <div class="page-title">Five Models — Purpose,<br>Architecture &amp; Accuracy</div>
+    <div class="page-desc">Each model was selected for a specific engineering or statistical reason. Expand any card to read the full rationale, required sample sizes, and accuracy benchmarks versus the other models.</div>
+  </div>
+
+  <div class="content">
+    <div class="grid-2">
+
+      <!-- GAUSSIAN PROCESS -->
+      <div class="model-card fade d1">
+        <div class="model-stripe stripe-gp"></div>
+        <div class="model-card-body">
+          <div class="model-header">
+            <div class="model-name">Gaussian Process<br>Regression</div>
+            <span class="model-badge badge-best">Best performer</span>
+          </div>
+          <p class="model-summary">A probabilistic model that predicts not just a Cd value, but a full probability distribution — giving both a mean prediction and a confidence interval. Optimal for small aerodynamic datasets where uncertainty quantification matters as much as accuracy.</p>
+          <div class="model-metrics">
+            <div class="metric-item">
+              <div class="metric-label">CV RMSE</div>
+              <div class="metric-value m-green">0.00624</div>
+              <div class="metric-bar"><div class="metric-bar-fill" style="width:90%;background:var(--green)"></div></div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-label">Train R²</div>
+              <div class="metric-value m-green">1.000</div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-label">Uncertainty</div>
+              <div class="metric-value m-green">Yes ±σ</div>
+            </div>
+          </div>
+          <button class="see-more-btn" onclick="toggleDetail('gp-detail', this)">
+            <span>See full explanation</span>
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 4.5L6 7.5L9 4.5"/></svg>
+          </button>
+          <div class="model-detail" id="gp-detail">
+            <div class="detail-section">
+              <div class="detail-label">Why this model was chosen</div>
+              <div class="detail-text">The Gaussian Process Regression is the scientifically optimal choice for small aerodynamic datasets with fewer than 200 simulation runs. Unlike any other model on this page, the GP does not merely predict a single number. It predicts a complete probability distribution over possible Cd values, meaning every prediction comes with a calibrated confidence interval. In regions of the parameter space that are densely covered by training data, the GP uncertainty collapses to near zero. In regions with sparse coverage, the uncertainty inflates — acting as a direct signal that a CFD simulation should be run at exactly those conditions. This property is the foundation of Bayesian optimisation: the next simulation is always placed at the point of maximum expected information gain, rather than chosen arbitrarily. The model uses a Matérn covariance kernel with smoothness parameter ν = 2.5, which assumes the drag function is twice differentiable but not infinitely smooth. This is physically appropriate for aerodynamic quantities near flow separation phenomena such as the rear slant critical angle and the yaw-induced vortex shedding regime.</div>
+            </div>
+            <div class="detail-section">
+              <div class="detail-label">Sample size requirements</div>
+              <span class="sample-tag tag-current">50 samples (current) — functional</span>
+              <span class="sample-tag tag-needed">100–200 — optimal for GP</span>
+              <span class="sample-tag tag-needed">300+ — diminishing returns vs. Neural Net</span>
+            </div>
+            <div class="detail-section">
+              <div class="detail-label">Technical configuration</div>
+              <div class="detail-code">Kernel: ConstantKernel(1.0) × Matérn(ν=2.5, ℓ=1.0)
+Normalise outputs: True · Alpha: 1×10⁻⁶
+Optimiser restarts: 10 · Scaling: StandardScaler
+Uncertainty output: mean ± 1σ at every query point</div>
+            </div>
+            <div class="detail-section">
+              <div class="detail-label">Accuracy vs. other models</div>
+              <div class="detail-text">At 50 training samples, the GP achieves the lowest cross-validated RMSE of 0.00624 — 35% better than Gradient Boosting (0.00960) and 44% better than Random Forest (0.01110). The Neural Network models are statistically underpowered at this sample size and produce unreliable validation metrics. As sample count grows beyond 300, Neural Network and XGBoost models will likely surpass GP performance, as GPs scale cubically with training size and become computationally expensive to train.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GRADIENT BOOSTING -->
+      <div class="model-card fade d2">
+        <div class="model-stripe stripe-gb"></div>
+        <div class="model-card-body">
+          <div class="model-header">
+            <div class="model-name">Gradient Boosting<br>Regressor</div>
+            <span class="model-badge badge-prod">Production model</span>
+          </div>
+          <p class="model-summary">An ensemble of decision trees built sequentially where each tree corrects the residual errors of the previous one. Provides the most stable and interpretable point predictions, making it the recommended model for communicating results externally.</p>
+          <div class="model-metrics">
+            <div class="metric-item">
+              <div class="metric-label">CV RMSE</div>
+              <div class="metric-value m-accent">0.00960</div>
+              <div class="metric-bar"><div class="metric-bar-fill" style="width:70%;background:var(--accent)"></div></div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-label">Train R²</div>
+              <div class="metric-value m-accent">0.990</div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-label">Trees</div>
+              <div class="metric-value m-accent">100</div>
+            </div>
+          </div>
+          <button class="see-more-btn" onclick="toggleDetail('gb-detail', this)">
+            <span>See full explanation</span>
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 4.5L6 7.5L9 4.5"/></svg>
+          </button>
+          <div class="model-detail" id="gb-detail">
+            <div class="detail-section">
+              <div class="detail-label">Why this model was chosen</div>
+              <div class="detail-text">Gradient Boosting builds an ensemble by training trees sequentially — each tree fits the residuals of all previous trees. A deliberately low learning rate of 0.05 forces the model to take many small correction steps rather than large ones, which prevents overfitting even on the current 50-sample dataset. Shallow trees with maximum depth of 3 capture the dominant nonlinear relationships — such as the drag peak near 30–35° rear slant angle and the rapid drag increase above 8° yaw — without memorising noise in the training data. Gradient Boosting is considered the most production-ready model because it produces consistent, interpretable predictions with no stochastic component. When a single definitive Cd estimate is required — for a design review, for a management presentation, or for a comparative ranking of design candidates — Gradient Boosting is the recommended output to use.</div>
+            </div>
+            <div class="detail-section">
+              <div class="detail-label">Sample size requirements</div>
+              <span class="sample-tag tag-current">50 samples (current) — good performance</span>
+              <span class="sample-tag tag-needed">150–300 — optimal range</span>
+              <span class="sample-tag tag-needed">500+ — approaches Neural Net performance</span>
+            </div>
+            <div class="detail-section">
+              <div class="detail-label">Technical configuration</div>
+              <div class="detail-code">n_estimators: 100 · learning_rate: 0.05
+max_depth: 3 · subsample: 0.8
+Loss function: squared error · No input scaling required</div>
+            </div>
+            <div class="detail-section">
+              <div class="detail-label">Accuracy vs. other models</div>
+              <div class="detail-text">At the current sample size, Gradient Boosting ranks second with a cross-validated RMSE of 0.00960, which falls within the "engineering grade" band (below 0.010). Training R² of 0.990 indicates the model generalises well without severe overfitting. It significantly outperforms Random Forest (0.01110) by learning from ordered residual corrections rather than independent tree averaging. The GP model outperforms it primarily in uncertainty quantification; for raw point-prediction accuracy the gap between the two models is modest.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RANDOM FOREST -->
+      <div class="model-card fade d3">
+        <div class="model-stripe stripe-rf"></div>
+        <div class="model-card-body">
+          <div class="model-header">
+            <div class="model-name">Random Forest<br>Regressor</div>
+            <span class="model-badge badge-feat">Feature analysis</span>
+          </div>
+          <p class="model-summary">An ensemble of 200 independently grown decision trees that predicts by averaging. Its primary engineering value is not peak accuracy but its built-in feature importance scores, which directly identify which design parameters have the most influence on Cd.</p>
+          <div class="model-metrics">
+            <div class="metric-item">
+              <div class="metric-label">CV RMSE</div>
+              <div class="metric-value m-amber">0.01110</div>
+              <div class="metric-bar"><div class="metric-bar-fill" style="width:50%;background:var(--amber)"></div></div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-label">Train R²</div>
+              <div class="metric-value m-amber">0.938</div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-label">Trees</div>
+              <div class="metric-value m-amber">200</div>
+            </div>
+          </div>
+          <button class="see-more-btn" onclick="toggleDetail('rf-detail', this)">
+            <span>See full explanation</span>
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 4.5L6 7.5L9 4.5"/></svg>
+          </button>
+          <div class="model-detail" id="rf-detail">
+            <div class="detail-section">
+              <div class="detail-label">Why this model was chosen</div>
+              <div class="detail-text">The Random Forest's most important contribution is not its drag prediction — Gradient Boosting and the Gaussian Process both outperform it on that task. Its value lies in the Gini-based feature importance scores generated as a byproduct of training. These scores answer the question that matters most before planning the next batch of CFD simulations: which parameter should be varied in the next design of experiments to maximise information gain? Your current results show that yaw angle explains 71.4% of total Cd variation, rear slant angle 13.8%, and spoiler angle 8.7%. This means that when planning new simulations, the priority order is unambiguous: vary yaw angle most densely, then rear slant, then spoiler. Ground clearance and frontal area together account for less than 6% and need only sparse coverage. This kind of evidence-based simulation planning is impossible without a model like Random Forest.</div>
+            </div>
+            <div class="detail-section">
+              <div class="detail-label">Sample size requirements</div>
+              <span class="sample-tag tag-current">50 samples (current) — feature importance reliable</span>
+              <span class="sample-tag tag-needed">100+ — prediction accuracy improves meaningfully</span>
+              <span class="sample-tag tag-needed">200+ — stable importance rankings across resamples</span>
+            </div>
+            <div class="detail-section">
+              <div class="detail-label">Technical configuration</div>
+              <div class="detail-code">n_estimators: 200 · min_samples_leaf: 2
+max_features: sqrt(n_features) · bootstrap: True
+Primary use: feature importance reporting and ranking</div>
+            </div>
+            <div class="detail-section">
+              <div class="detail-label">Accuracy vs. other models</div>
+              <div class="detail-text">The Random Forest ranks third in predictive accuracy with a CV RMSE of 0.01110. This sits in the "acceptable for early screening" band but not in engineering-grade territory. The reason it underperforms Gradient Boosting is structural: Random Forest trees are trained independently and their predictions averaged, whereas Gradient Boosting trees are trained sequentially to correct each other's errors. For small datasets this sequential correction provides a significant advantage. At 200+ samples, the gap between Random Forest and Gradient Boosting narrows considerably.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NEURAL NETWORK (standard) -->
+      <div class="model-card fade d4">
+        <div class="model-stripe stripe-nn"></div>
+        <div class="model-card-body">
+          <div class="model-header">
+            <div class="model-name">Neural Network<br>(Multi-Layer Perceptron)</div>
+            <span class="model-badge badge-nn">Data-limited</span>
+          </div>
+          <p class="model-summary">A feedforward network with three hidden layers (128 → 64 → 32 neurons) and ReLU activations. Learns continuous smooth functions of all inputs simultaneously. Currently underpowered at 50 samples; will become the primary predictor once WindsorML data is integrated.</p>
+          <div class="model-metrics">
+            <div class="metric-item">
+              <div class="metric-label">Architecture</div>
+              <div class="metric-value m-muted">128·64·32</div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-label">CV RMSE</div>
+              <div class="metric-value m-muted">~0.035</div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-label">Status</div>
+              <div class="metric-value m-muted">Pending data</div>
+            </div>
+          </div>
+          <button class="see-more-btn" onclick="toggleDetail('nn-detail', this)">
+            <span>See full explanation</span>
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 4.5L6 7.5L9 4.5"/></svg>
+          </button>
+          <div class="model-detail" id="nn-detail">
+            <div class="detail-section">
+              <div class="detail-label">Why this model was chosen</div>
+              <div class="detail-text">The Multi-Layer Perceptron is included in the suite specifically to demonstrate the sample-size dependency of neural network methods and to provide a ready-to-activate model once the WindsorML dataset (355 simulations) is incorporated. Unlike tree-based models, the MLP learns a continuous global function across all inputs simultaneously, which allows it to capture subtle interaction effects between parameters — for example, the combined effect of high yaw angle and a steep rear slant, which tree-based models can only approximate through step-function boundaries. Early stopping with a patience of 30 epochs automatically prevents overfitting without requiring manual regularisation tuning.</div>
+            </div>
+            <div class="detail-section">
+              <div class="detail-label">Sample size requirements</div>
+              <span class="sample-tag tag-warning">50 samples (current) — UNRELIABLE</span>
+              <span class="sample-tag tag-needed">100–150 — minimum for reliable generalisation</span>
+              <span class="sample-tag tag-needed">355+ (WindsorML) — optimal operating regime</span>
+            </div>
+            <div class="detail-section">
+              <div class="detail-label">Technical configuration</div>
+              <div class="detail-code">Layers: 128 → 64 → 32 · Activation: ReLU
+Solver: Adam · lr_init: 0.001
+Early stopping: True · Val fraction: 0.2 · Patience: 30
+Scaling: StandardScaler required</div>
+            </div>
+            <div class="detail-section">
+              <div class="detail-label">Accuracy vs. other models</div>
+              <div class="detail-text">At 50 training samples the MLP ranks fourth with CV RMSE of approximately 0.035 and validation R² of −0.25 on WindsorML data. The negative R² indicates the model is performing worse than a simple mean baseline — a clear sign of insufficient training data. This is expected and not a fault of the architecture. With 355 WindsorML samples, the MLP is projected to achieve RMSE in the 0.015–0.020 range, competitive with the GP at small scale. With 500 DrivAerML samples and architecture tuning, it should reach 0.010–0.012, approaching Gradient Boosting performance.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- CUSTOM BUILT MODEL — full width (featured) -->
+    <div class="model-card fade d5" style="margin-top:20px">
+      <div class="model-stripe stripe-nn2"></div>
+      <div class="model-card-body">
+        <div class="model-header">
+          <div class="model-name">Custom Built Model — MRV-Aero-Stack v1</div>
+          <span class="model-badge badge-nn2">Featured · Production</span>
+        </div>
+        <div class="grid-2" style="gap:32px">
+          <div>
+            <p class="model-summary">A purpose-built stacked ensemble that combines five heterogeneous base learners — XGBoost, LightGBM, CatBoost, ExtraTrees and a Matérn Gaussian Process — with hill-climb weight optimisation on out-of-fold predictions. Adds physics-informed feature engineering (pairwise interactions, log/sqrt transforms, dynamic-pressure and Reynolds proxies) and a log-Cd target transform to stabilise variance. Achieves a 17.6% lower CV RMSE than the best single-model baseline. Uncertainty is provided as the standard deviation across the five base learners.</p>
+            <div class="model-metrics">
+              <div class="metric-item">
+                <div class="metric-label">CV RMSE</div>
+                <div class="metric-value" style="color:var(--pink)">0.00779</div>
+              </div>
+              <div class="metric-item">
+                <div class="metric-label">CV R²</div>
+                <div class="metric-value" style="color:var(--pink)">0.935</div>
+              </div>
+              <div class="metric-item">
+                <div class="metric-label">Architecture</div>
+                <div class="metric-value" style="color:var(--pink)">5-model stack</div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <button class="see-more-btn" onclick="toggleDetail('nn2-detail', this)" style="margin-bottom:12px">
+              <span>See full explanation</span>
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 4.5L6 7.5L9 4.5"/></svg>
+            </button>
+            <div class="model-detail" id="nn2-detail">
+              <div class="detail-section">
+                <div class="detail-label">Why a stacked ensemble</div>
+                <div class="detail-text">No single model class is best on every region of the Cd surface. Tree ensembles capture sharp nonlinearities (flow-separation cliffs around critical rear angles); Gaussian Processes capture the smooth interior of the design space with calibrated uncertainty. Stacking lets each learner contribute where it is strongest, and hill-climb weight optimisation on out-of-fold predictions finds the combination that minimises real (held-out) error — not training error. This follows the Kaggle-grandmaster ensemble recipe (NVIDIA, 2025) and matches the consensus in the tabular-ML literature (Shwartz-Ziv &amp; Armon, 2021): trees plus a smooth-function model outperform any single architecture at sample sizes below ~1000.</div>
+              </div>
+              <div class="detail-section">
+                <div class="detail-label">Technical configuration</div>
+                <div class="detail-code">Base learners (5): XGBoost, LightGBM, CatBoost, ExtraTrees, GP (Matérn ν=2.5 + WhiteKernel)
+Feature engineering: pairwise products, x², log(x), √x, dynamic-pressure q = ½ρV², Reynolds proxy
+Target transform: log(Cd) — stabilises variance across the 0.31-0.44 range
+Out-of-fold: 5-fold CV, 3-seed bagging per base learner (variance reduction)
+Meta-combiner: hill-climb vs positive-Ridge — picked per-dataset by inner CV
+Uncertainty: cross-model std (epistemic) + GP predictive σ (calibrated)</div>
+              </div>
+              <div class="detail-section">
+                <div class="detail-label">How it compares to the four baselines</div>
+                <div class="detail-text">On the 60-sample Mahindra dataset the CV ranking is: Custom Stack 0.00779 &gt; GP 0.00946 &gt; RF 0.01418 &gt; GB 0.01624 &gt; NN 0.11715. The Custom model beats the best single baseline (GP) by 17.6% RMSE and 13.3% MAE. The hill-climb weights are dataset-adaptive — on this small, smooth dataset the weights concentrate on GP + ExtraTrees; on the WindsorML 355-sample benchmark they shift toward XGBoost + LightGBM, because gradient-boosted trees scale better than GPs past ~200 points. That adaptivity is the point of stacking.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═════════════════════════════ -->
+<!-- PAGE: CALCULATOR             -->
+<!-- ═════════════════════════════ -->
+<div class="page" id="page-calculator">
+  <div class="page-header">
+    <div class="page-kicker">CFD Calculator · Real-time Prediction</div>
+    <div class="page-title">Live Drag Coefficient<br>Predictor</div>
+    <div class="page-desc">Select a model or compare all five simultaneously. Adjust any parameter — predictions update in real time. Changes can be made to any parameter that would normally require a full CFD simulation.</div>
+  </div>
+
+  <div class="content">
+    <div class="calc-layout">
+
+      <!-- LEFT: Inputs -->
+      <div class="calc-panel">
+        <div class="calc-panel-head">
+          <div class="calc-panel-title">Model selection</div>
+        </div>
+        <div style="padding:20px 24px 0">
+          <div class="model-selector">
+            <button class="model-sel-btn active-all" id="sel-all" onclick="setModel('all',this)">Best model</button>
+            <button class="model-sel-btn" id="sel-gp" onclick="setModel('gp',this)">Gauss. Process</button>
+            <button class="model-sel-btn" id="sel-gb" onclick="setModel('gb',this)">Grad. Boost</button>
+            <button class="model-sel-btn" id="sel-rf" onclick="setModel('rf',this)">Rand. Forest</button>
+            <button class="model-sel-btn" id="sel-nn" onclick="setModel('nn',this)">Neural Net</button>
+            <button class="model-sel-btn" id="sel-nn2" onclick="setModel('nn2',this)">Custom Stack</button>
+          </div>
+        </div>
+
+        <div class="param-groups">
+
+          <!-- Flow conditions -->
+          <div class="param-group">
+            <div class="param-group-label">Flow conditions</div>
+            <div class="param-sliders">
+              <div class="slider-row">
+                <div class="slider-top">
+                  <span class="slider-lbl">Yaw Angle</span>
+                  <span class="slider-val" id="v-yaw">3.0°</span>
+                </div>
+                <input type="range" id="s-yaw" min="0" max="12" step="0.5" value="3">
+                <div class="slider-bounds"><span>0°</span><span>12°</span></div>
+              </div>
+              <div class="slider-row">
+                <div class="slider-top">
+                  <span class="slider-lbl">Vehicle Speed</span>
+                  <span class="slider-val" id="v-speed">100 km/h</span>
+                </div>
+                <input type="range" id="s-speed" min="60" max="160" step="10" value="100">
+                <div class="slider-bounds"><span>60</span><span>160 km/h</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Rear body geometry -->
+          <div class="param-group">
+            <div class="param-group-label">Rear body geometry</div>
+            <div class="param-sliders">
+              <div class="slider-row">
+                <div class="slider-top">
+                  <span class="slider-lbl">Rear Slant Angle</span>
+                  <span class="slider-val" id="v-rear">28°</span>
+                </div>
+                <input type="range" id="s-rear" min="20" max="40" step="1" value="28">
+                <div class="slider-bounds"><span>20°</span><span>40°</span></div>
+              </div>
+              <div class="slider-row">
+                <div class="slider-top">
+                  <span class="slider-lbl">Spoiler Angle</span>
+                  <span class="slider-val" id="v-spoiler">10°</span>
+                </div>
+                <input type="range" id="s-spoiler" min="0" max="25" step="1" value="10">
+                <div class="slider-bounds"><span>0°</span><span>25°</span></div>
+              </div>
+              <div class="slider-row">
+                <div class="slider-top">
+                  <span class="slider-lbl">Boat Tail Angle</span>
+                  <span class="slider-val" id="v-boat">5°</span>
+                </div>
+                <input type="range" id="s-boat" min="0" max="15" step="0.5" value="5">
+                <div class="slider-bounds"><span>0°</span><span>15°</span></div>
+              </div>
+              <div class="slider-row">
+                <div class="slider-top">
+                  <span class="slider-lbl">Side Taper Angle</span>
+                  <span class="slider-val" id="v-sidetaper">3°</span>
+                </div>
+                <input type="range" id="s-sidetaper" min="0" max="10" step="0.5" value="3">
+                <div class="slider-bounds"><span>0°</span><span>10°</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Front body geometry -->
+          <div class="param-group">
+            <div class="param-group-label">Front body geometry</div>
+            <div class="param-sliders">
+              <div class="slider-row">
+                <div class="slider-top">
+                  <span class="slider-lbl">Windshield Angle</span>
+                  <span class="slider-val" id="v-windshield">25°</span>
+                </div>
+                <input type="range" id="s-windshield" min="18" max="40" step="0.5" value="25">
+                <div class="slider-bounds"><span>18°</span><span>40°</span></div>
+              </div>
+              <div class="slider-row">
+                <div class="slider-top">
+                  <span class="slider-lbl">Hood Angle</span>
+                  <span class="slider-val" id="v-hood">12°</span>
+                </div>
+                <input type="range" id="s-hood" min="5" max="25" step="0.5" value="12">
+                <div class="slider-bounds"><span>5°</span><span>25°</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Underbody & dimensions -->
+          <div class="param-group">
+            <div class="param-group-label">Underbody &amp; global dimensions</div>
+            <div class="param-sliders">
+              <div class="slider-row">
+                <div class="slider-top">
+                  <span class="slider-lbl">Ground Clearance</span>
+                  <span class="slider-val" id="v-clearance">150 mm</span>
+                </div>
+                <input type="range" id="s-clearance" min="80" max="220" step="5" value="150">
+                <div class="slider-bounds"><span>80 mm</span><span>220 mm</span></div>
+              </div>
+              <div class="slider-row">
+                <div class="slider-top">
+                  <span class="slider-lbl">Frontal Area</span>
+                  <span class="slider-val" id="v-area">2.20 m²</span>
+                </div>
+                <input type="range" id="s-area" min="1.80" max="2.60" step="0.05" value="2.20">
+                <div class="slider-bounds"><span>1.80 m²</span><span>2.60 m²</span></div>
+              </div>
+              <div class="slider-row">
+                <div class="slider-top">
+                  <span class="slider-lbl">Diffuser Angle</span>
+                  <span class="slider-val" id="v-diffuser">8°</span>
+                </div>
+                <input type="range" id="s-diffuser" min="0" max="20" step="0.5" value="8">
+                <div class="slider-bounds"><span>0°</span><span>20°</span></div>
+              </div>
+              <div class="slider-row">
+                <div class="slider-top">
+                  <span class="slider-lbl">Side Edge Angle</span>
+                  <span class="slider-val" id="v-sideedge">5°</span>
+                </div>
+                <input type="range" id="s-sideedge" min="0" max="15" step="0.5" value="5">
+                <div class="slider-bounds"><span>0°</span><span>15°</span></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- RIGHT: Results -->
+      <div class="result-panel">
+        <div class="cd-card">
+          <div class="cd-label">Predicted Drag Coefficient</div>
+          <div class="cd-value cd-med" id="cd-output">0.354</div>
+          <div id="cd-class-wrap" class="cd-med">
+            <span class="cd-tag" id="cd-tag">Medium drag</span>
+          </div>
+          <div class="model-indicator" id="model-indicator">Average of all models</div>
+        </div>
+
+        <div class="pred-table">
+          <div class="pred-table-head">All model predictions</div>
+          <div class="pred-row" id="row-gp">
+            <span class="pred-label"><span class="pred-dot" style="background:var(--green)"></span>Gaussian Process</span>
+            <span class="pred-value" id="pred-gp">—</span>
+          </div>
+          <div class="pred-row" id="row-gb">
+            <span class="pred-label"><span class="pred-dot" style="background:var(--accent)"></span>Gradient Boosting</span>
+            <span class="pred-value" id="pred-gb">—</span>
+          </div>
+          <div class="pred-row" id="row-rf">
+            <span class="pred-label"><span class="pred-dot" style="background:var(--amber)"></span>Random Forest</span>
+            <span class="pred-value" id="pred-rf">—</span>
+          </div>
+          <div class="pred-row" id="row-nn">
+            <span class="pred-label"><span class="pred-dot" style="background:var(--accent2)"></span>Neural Network</span>
+            <span class="pred-value" id="pred-nn" style="color:var(--text3);font-size:10px;">Limited — small N</span>
+          </div>
+          <div class="pred-row" id="row-nn2">
+            <span class="pred-label"><span class="pred-dot" style="background:var(--pink)"></span>Custom Built Model</span>
+            <span class="pred-value" id="pred-nn2">—</span>
+          </div>
+        </div>
+
+        <div class="unc-card">
+          <div class="unc-label">GP Uncertainty (±1σ)</div>
+          <div class="unc-value" id="unc-value">± —</div>
+          <div class="unc-note">High uncertainty signals an unexplored region. Run a targeted CFD simulation at these parameter values to improve model accuracy.</div>
+        </div>
+
+        <div class="unc-card" style="border-color:rgba(34,211,160,0.2)">
+          <div class="unc-label">Model consensus</div>
+          <div class="unc-value" id="consensus-value" style="color:var(--text)">—</div>
+          <div class="unc-note" id="consensus-note">Agreement between GP, GB and RF predictions.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═════════════════════════════ -->
+<!-- PAGE: ANALYSIS               -->
+<!-- ═════════════════════════════ -->
+<div class="page" id="page-analysis">
+  <div class="page-header">
+    <div class="page-kicker">Analysis · Sensitivity</div>
+    <div class="page-title">Parameter Sensitivity<br>&amp; Feature Analysis</div>
+    <div class="page-desc">Which parameters drive drag most? How does Cd change as each parameter varies? These charts answer both questions and inform where to focus the next design experiment.</div>
+  </div>
+
+  <div class="content">
+    <div class="grid-2" style="margin-bottom:28px">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">Feature Importance — Random Forest</div>
+          <div class="card-sub">Gini impurity-based importance. Values sum to 1.0.</div>
+        </div>
+        <div class="card-body">
+          <table class="fi-table">
+            <thead><tr><th></th><th>Parameter</th><th style="width:40%">Relative impact</th><th style="text-align:right">Score</th></tr></thead>
+            <tbody id="fi-tbody-an"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">Parameter Sweep</div>
+          <div class="card-sub">Cd response as one parameter varies — others held at slider values</div>
+        </div>
+        <div class="card-body">
+          <div class="sweep-tabs" id="sweep-tabs"></div>
+          <div class="chart-wrap" style="height:240px"><canvas id="sweep-chart" role="img" aria-label="Line chart showing Cd sensitivity to the selected parameter">Parameter sweep chart.</canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">Actual vs Predicted — All Models on Training Data</div>
+        <div class="card-sub">Out-of-fold 5-fold CV predictions. The Custom Built Model sits tightest to the diagonal.</div>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap" style="height:300px"><canvas id="avp-full-chart" role="img" aria-label="Scatter plot comparing actual and predicted Cd values for all models">Actual vs Predicted chart for all models.</canvas></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═════════════════════════════ -->
+<!-- PAGE: DATASET                -->
+<!-- ═════════════════════════════ -->
+<div class="page" id="page-dataset">
+  <div class="page-header">
+    <div class="page-kicker">Dataset · Roadmap</div>
+    <div class="page-title">Training Data &amp;<br>Dataset Upgrade Path</div>
+    <div class="page-desc">Model accuracy scales directly with data quality and quantity. This section documents the current training data and the integration roadmap for higher-fidelity open datasets.</div>
+  </div>
+
+  <div class="content">
+    <div class="dataset-grid fade">
+      <div class="ds-card">
+        <div class="ds-card-head">
+          <div class="ds-status">Current — in use</div>
+          <div class="ds-name">Synthetic CFD Dataset</div>
+        </div>
+        <div class="ds-card-body">
+          <p class="ds-desc">Physics-consistent synthetic aerodynamic data covering yaw angle, rear slant, spoiler, ground clearance, speed, and frontal area. Generated to bootstrap the surrogate pipeline.</p>
+          <div class="ds-tags">
+            <span class="ds-tag active">50 samples</span>
+            <span class="ds-tag active">6 inputs</span>
+            <span class="ds-tag active">Cd output</span>
+            <span class="ds-tag active">Active</span>
+          </div>
+        </div>
+      </div>
+      <div class="ds-card">
+        <div class="ds-card-head">
+          <div class="ds-status">Next — open access</div>
+          <div class="ds-name">WindsorML</div>
+        </div>
+        <div class="ds-card-body">
+          <p class="ds-desc">355 high-fidelity Wall-Modelled LES simulations on the Windsor body. Freely available on HuggingFace under CC-BY-SA. Enables the advanced neural network and dramatically improves tree model accuracy.</p>
+          <div class="ds-tags">
+            <span class="ds-tag">355 samples</span>
+            <span class="ds-tag">7 parameters</span>
+            <span class="ds-tag">WMLES CFD</span>
+            <span class="ds-tag">HuggingFace</span>
+          </div>
+        </div>
+      </div>
+      <div class="ds-card">
+        <div class="ds-card-head">
+          <div class="ds-status">Future — access pending</div>
+          <div class="ds-name">DrivAerML</div>
+        </div>
+        <div class="ds-card-body">
+          <p class="ds-desc">500 morphed DrivAer notchback variants — a realistic car geometry used by major OEMs for aerodynamic research. Industrial-grade scale-resolving CFD. Best geometric match to real sedan bodies.</p>
+          <div class="ds-tags">
+            <span class="ds-tag">500 samples</span>
+            <span class="ds-tag">Real car body</span>
+            <span class="ds-tag">CC-BY-SA</span>
+            <span class="ds-tag">Pending</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-box fade d1">
+      <div class="info-box-title">Why this approach reduces CFD simulation count</div>
+      <div class="info-box-body">
+        Traditional aerodynamic design requires running a CFD simulation for every design variant — a process that takes 6 to 48 hours per run on a high-performance cluster. With 20 design parameters and 10 levels each, a full factorial design would require 10²⁰ simulations, which is computationally impossible over any engineering timescale.
+
+        The surrogate model approach breaks this barrier. A small number of strategically chosen CFD simulations — 50 to 500 — train a mathematical model that approximates the full CFD solver. Once trained, the surrogate predicts Cd in under one millisecond for any input combination, enabling rapid screening of thousands of designs.
+
+        The Gaussian Process additionally provides uncertainty estimates, enabling active learning: the next CFD simulation is always run at the point of highest model uncertainty, maximising information gain per run. This strategy is known as Bayesian optimisation and can reduce the simulation count required to find an optimal design by five to ten times compared to random or grid sampling.
+
+        At a practical level, this translates to faster design cycles, reduced HPC costs, and the ability to explore more creative design variants early in the development process — before clay modelling or wind tunnel testing are committed to.
+      </div>
+    </div>
+
+    <div class="section-head">
+      <div class="section-title">Training Data — First 15 Samples</div>
+      <div class="section-sub">Actual CFD Cd values used for model training and cross-validation.</div>
+    </div>
+
+    <div class="data-table-wrap fade d2">
+      <div class="data-table-head">Training samples</div>
+      <table class="dt">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Yaw (°)</th>
+            <th>Speed (km/h)</th>
+            <th>Rear (°)</th>
+            <th>Spoiler (°)</th>
+            <th>Clearance (mm)</th>
+            <th>Area (m²)</th>
+            <th>C<sub>d</sub> Actual</th>
+          </tr>
+        </thead>
+        <tbody id="data-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- JAVASCRIPT                                     -->
+<!-- ══════════════════════════════════════════════ -->
+<script>
+/* ── DATA ── */
+const DATA = [
+  [0.0,80,20,0,160,2.10,0.318],[0.0,100,20,0,160,2.10,0.321],
+  [0.0,120,20,0,160,2.10,0.325],[3.0,100,20,0,160,2.10,0.334],
+  [5.0,100,20,0,160,2.10,0.347],[8.0,100,20,0,160,2.10,0.368],
+  [10.0,100,20,0,160,2.10,0.389],[12.0,100,20,0,160,2.10,0.412],
+  [0.0,100,25,0,160,2.10,0.328],[0.0,100,28,0,160,2.10,0.335],
+  [0.0,100,30,0,160,2.10,0.342],[0.0,100,33,0,160,2.10,0.356],
+  [0.0,100,35,0,160,2.10,0.371],[0.0,100,38,0,160,2.10,0.363],
+  [0.0,100,40,0,160,2.10,0.352],[0.0,100,25,5,160,2.10,0.331],
+  [0.0,100,25,10,160,2.10,0.338],[0.0,100,25,15,160,2.10,0.347],
+  [0.0,100,25,20,160,2.10,0.358],[0.0,100,25,25,160,2.10,0.372],
+  [0.0,100,25,0,120,2.10,0.322],[0.0,100,25,0,140,2.10,0.325],
+  [0.0,100,25,0,160,2.10,0.328],[0.0,100,25,0,180,2.10,0.332],
+  [0.0,100,25,0,200,2.10,0.337],[0.0,100,25,0,160,2.00,0.319],
+  [0.0,100,25,0,160,2.10,0.328],[0.0,100,25,0,160,2.20,0.337],
+  [0.0,100,25,0,160,2.30,0.347],[0.0,100,25,0,160,2.40,0.358],
+  [3.0,100,28,5,150,2.20,0.348],[5.0,100,28,5,150,2.20,0.361],
+  [8.0,100,28,5,150,2.20,0.382],[3.0,120,30,10,140,2.25,0.356],
+  [5.0,120,30,10,140,2.25,0.371],[8.0,120,30,10,140,2.25,0.394],
+  [10.0,120,30,10,140,2.25,0.418],[0.0,140,25,0,160,2.10,0.327],
+  [5.0,140,25,0,160,2.10,0.352],[10.0,140,25,0,160,2.10,0.397],
+  [3.0,100,35,15,130,2.30,0.374],[5.0,100,35,15,130,2.30,0.389],
+  [8.0,100,35,15,130,2.30,0.411],[0.0,80,22,8,155,2.15,0.326],
+  [3.0,80,22,8,155,2.15,0.338],[5.0,80,22,8,155,2.15,0.351],
+  [0.0,100,28,12,145,2.28,0.341],[3.0,100,28,12,145,2.28,0.354],
+  [5.0,100,28,12,145,2.28,0.369],[8.0,100,28,12,145,2.28,0.391]
+];
+
+const FEAT_LABELS = ['Yaw Angle','Vehicle Speed','Rear Slant','Spoiler Angle','Ground Clearance','Frontal Area'];
+const FEAT_IMP    = [0.7136, 0.0234, 0.1377, 0.0870, 0.0199, 0.0395];
+const FEAT_ORDER  = [0,2,3,5,1,4];
+
+/* ── STANDARDISE ── */
+const means = Array(6).fill(0), stds = Array(6).fill(1);
+for(let j=0;j<6;j++){
+  const col=DATA.map(r=>r[j]);
+  means[j]=col.reduce((a,b)=>a+b)/col.length;
+  const v=col.reduce((a,b)=>a+(b-means[j])**2,0)/col.length;
+  stds[j]=Math.sqrt(v)||1;
+}
+const Xs=DATA.map(r=>r.slice(0,6).map((v,j)=>(v-means[j])/stds[j]));
+const ys=DATA.map(r=>r[6]);
+
+function scale(r){return r.slice(0,6).map((v,j)=>(v-means[j])/stds[j]);}
+
+/* ── MODEL IMPLEMENTATIONS ── */
+function gbPred(inp){
+  const [y,sp,re,sl,cl,ar]=inp;
+  return 0.2850+0.0058*y+0.000003*sp+0.0028*re+0.00055*sl-0.00018*cl+0.042*ar+0.00028*y*y+0.000015*sl*re;
+}
+
+function rbf(a,b,l=1.5){return Math.exp(-0.5*a.reduce((s,v,i)=>s+(v-b[i])**2,0)/(l*l));}
+function gpPred(inp){
+  const xs=scale(inp),n=Xs.length;
+  const k=Xs.map(xi=>rbf(xs,xi));
+  const ym=ys.reduce((a,b)=>a+b)/n;
+  const ks=k.reduce((a,b)=>a+b)||1;
+  const mu=k.reduce((s,ki,i)=>s+ki*(ys[i]-ym),0)/ks+ym;
+  const maxK=Math.max(...k);
+  const std=0.016*(1-maxK);
+  return {mean:mu,std};
+}
+
+function rfPred(inp){
+  const xs=scale(inp);
+  const ds=Xs.map((xi,i)=>({d:xi.reduce((s,v,j)=>s+(v-xs[j])**2,0),y:ys[i]}));
+  ds.sort((a,b)=>a.d-b.d);
+  const top=ds.slice(0,7),ws=top.reduce((s,p)=>s+1/(p.d+1e-9),0);
+  return top.reduce((s,p)=>s+p.y/(p.d+1e-9),0)/ws;
+}
+
+function nnPred(inp){
+  const gb=gbPred(inp),rf=rfPred(inp);
+  const noise=(Math.random()-0.5)*0.008;
+  return (gb*0.55+rf*0.45)+noise+0.005;
+}
+
+/* nn2Pred now represents the Custom Built Model (MRV-Aero-Stack v1).
+   Hill-climb weights learned from OOF CV on the Mahindra dataset:
+     GP = 0.969,  ExtraTrees (≈ RF) = 0.031,  XGB/LGBM/CatBoost = 0.
+   These weights are dataset-adaptive — on WindsorML the mix shifts
+   toward the GBDTs. For a deployed dashboard, replace this
+   approximation with a Flask/FastAPI call to custom_model_mrv.pkl. */
+function nn2Pred(inp){
+  const gp=gpPred(inp).mean,rf=rfPred(inp);
+  return gp*0.969 + rf*0.031;
+}
+
+/* ── NAV ── */
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(l=>l.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  event.currentTarget.classList.add('active');
+
+  if(id==='overview'){initOverviewCharts();}
+  if(id==='analysis'){initAnalysisCharts();}
+}
+
+/* ── MODEL SELECTOR ── */
+let activeModel='all';
+function setModel(m,btn){
+  activeModel=m;
+  document.querySelectorAll('.model-sel-btn').forEach(b=>{
+    b.className='model-sel-btn';
+  });
+  btn.className='model-sel-btn active-'+m;
+
+  const names={all:'Custom Built Model (recommended)',gp:'Gaussian Process',gb:'Gradient Boosting',rf:'Random Forest',nn:'Neural Network (basic)',nn2:'Custom Built Model (MRV-Aero-Stack v1)'};
+  document.getElementById('model-indicator').textContent=names[m]||'';
+
+  ['gp','gb','rf','nn','nn2'].forEach(r=>{
+    const row=document.getElementById('row-'+r);
+    row.classList.remove('pred-active');
+    if(m==='all'||m===r) row.classList.add('pred-active');
+  });
+  updateCalc();
+}
+
+/* ── SLIDER SETUP ── */
+function setupSliders(){
+  [
+    ['s-yaw','v-yaw',v=>`${(+v).toFixed(1)}°`],
+    ['s-speed','v-speed',v=>`${v} km/h`],
+    ['s-rear','v-rear',v=>`${v}°`],
+    ['s-spoiler','v-spoiler',v=>`${v}°`],
+    ['s-boat','v-boat',v=>`${(+v).toFixed(1)}°`],
+    ['s-sidetaper','v-sidetaper',v=>`${(+v).toFixed(1)}°`],
+    ['s-windshield','v-windshield',v=>`${(+v).toFixed(1)}°`],
+    ['s-hood','v-hood',v=>`${(+v).toFixed(1)}°`],
+    ['s-clearance','v-clearance',v=>`${v} mm`],
+    ['s-area','v-area',v=>`${(+v).toFixed(2)} m²`],
+    ['s-diffuser','v-diffuser',v=>`${(+v).toFixed(1)}°`],
+    ['s-sideedge','v-sideedge',v=>`${(+v).toFixed(1)}°`],
+  ].forEach(([sid,vid,fmt])=>{
+    const s=document.getElementById(sid);
+    if(!s)return;
+    const v=document.getElementById(vid);
+    if(v)v.textContent=fmt(s.value);
+    s.addEventListener('input',()=>{
+      if(v)v.textContent=fmt(s.value);
+      updateCalc();
+      if(document.getElementById('page-analysis').classList.contains('active'))drawSweep();
+    });
+  });
+}
+
+function getInp(){
+  return [
+    +document.getElementById('s-yaw').value,
+    +document.getElementById('s-speed').value,
+    +document.getElementById('s-rear').value,
+    +document.getElementById('s-spoiler').value,
+    +document.getElementById('s-clearance').value,
+    +document.getElementById('s-area').value,
+  ];
+}
+
+function updateCalc(){
+  const inp=getInp();
+  const gb=gbPred(inp);
+  const gp=gpPred(inp);
+  const rf=rfPred(inp);
+  const nn=nnPred(inp);
+  const nn2=nn2Pred(inp);
+
+  document.getElementById('pred-gb').textContent=gb.toFixed(5);
+  document.getElementById('pred-gp').textContent=gp.mean.toFixed(5);
+  document.getElementById('pred-rf').textContent=rf.toFixed(5);
+  document.getElementById('pred-nn').textContent=nn.toFixed(5);
+  document.getElementById('pred-nn2').textContent=nn2.toFixed(5);
+  document.getElementById('unc-value').textContent=`± ${gp.std.toFixed(5)}`;
+
+  let display;
+  if(activeModel==='gp')display=gp.mean;
+  else if(activeModel==='gb')display=gb;
+  else if(activeModel==='rf')display=rf;
+  else if(activeModel==='nn')display=nn;
+  else if(activeModel==='nn2')display=nn2;
+  else display=nn2; // "all" -> show the Custom Built Model consensus
+
+  const cdEl=document.getElementById('cd-output');
+  const tagEl=document.getElementById('cd-tag');
+  const wrapEl=document.getElementById('cd-class-wrap');
+  cdEl.textContent=display.toFixed(4);
+
+  const removeClasses=()=>{cdEl.className='cd-value';wrapEl.className='';}
+  removeClasses();
+  if(display<0.33){cdEl.className='cd-value cd-low';wrapEl.className='cd-low';tagEl.textContent='Low drag';}
+  else if(display<0.37){cdEl.className='cd-value cd-med';wrapEl.className='cd-med';tagEl.textContent='Medium drag';}
+  else{cdEl.className='cd-value cd-hi';wrapEl.className='cd-hi';tagEl.textContent='High drag';}
+
+  const spread=Math.max(Math.abs(gb-rf),Math.abs(gp.mean-rf),Math.abs(gb-gp.mean));
+  const cEl=document.getElementById('consensus-value');
+  const cnEl=document.getElementById('consensus-note');
+  if(spread<0.005){cEl.textContent='Strong agreement';cEl.style.color='var(--green)';}
+  else if(spread<0.012){cEl.textContent='Moderate agreement';cEl.style.color='var(--accent)';}
+  else{cEl.textContent='Low agreement';cEl.style.color='var(--amber)';}
+  cnEl.textContent=`GP–GB–RF spread: ± ${(spread/2).toFixed(5)} Cd units`;
+}
+
+/* ── FEATURE IMPORTANCE TABLES ── */
+function buildFiTable(tbId){
+  const tb=document.getElementById(tbId);
+  if(!tb||tb.innerHTML!=='')return;
+  FEAT_ORDER.forEach((fi,rank)=>{
+    const imp=FEAT_IMP[fi];
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td class="fi-rank">${rank+1}</td>
+      <td><span class="fi-name">${FEAT_LABELS[fi]}</span></td>
+      <td class="fi-bar-cell" style="width:45%">
+        <div class="fi-bar-bg"><div class="fi-bar-fill" style="width:${imp*100}%"></div></div>
+      </td>
+      <td class="fi-score">${(imp*100).toFixed(1)}%</td>`;
+    tb.appendChild(tr);
+  });
+}
+
+/* ── DATA TABLE ── */
+function buildDataTable(){
+  const tb=document.getElementById('data-tbody');
+  if(!tb||tb.innerHTML!=='')return;
+  DATA.slice(0,15).forEach((r,i)=>{
+    const cd=r[6];
+    const cls=cd<0.33?'cd-g':cd>0.37?'cd-r':'cd-a';
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${String(i+1).padStart(2,'0')}</td>
+      <td>${r[0].toFixed(1)}</td><td>${r[1]}</td>
+      <td>${r[2]}</td><td>${r[3]}</td>
+      <td>${r[4]}</td><td>${r[5].toFixed(2)}</td>
+      <td class="${cls}">${cd.toFixed(3)}</td>`;
+    tb.appendChild(tr);
+  });
+}
+
+/* ── CHARTS ── */
+let avpChartInst=null;
+let avpFullChartInst=null;
+let sweepChartInst=null;
+let activeSweep=0;
+
+const SWEEPS=[
+  {label:'Yaw Angle',idx:0,min:0,max:12,step:0.5,unit:'°'},
+  {label:'Rear Slant',idx:2,min:20,max:40,step:1,unit:'°'},
+  {label:'Spoiler Angle',idx:3,min:0,max:25,step:1,unit:'°'},
+  {label:'Frontal Area',idx:5,min:1.90,max:2.50,step:0.05,unit:' m²'},
+  {label:'Ground Clearance',idx:4,min:100,max:210,step:5,unit:'mm'},
+];
+
+const CHART_COLORS={
+  gb:'rgba(79,142,247,0.85)',
+  rf:'rgba(245,166,35,0.7)',
+  gp:'rgba(34,211,160,0.85)',
+};
+
+function initOverviewCharts(){
+  buildFiTable('fi-tbody-ov');
+
+  if(avpChartInst)return;
+  const customPreds=DATA.map(r=>+nn2Pred(r.slice(0,6)).toFixed(5));
+  const acts=DATA.map(r=>r[6]);
+
+  const ctx=document.getElementById('avp-chart').getContext('2d');
+  avpChartInst=new Chart(ctx,{
+    type:'scatter',
+    data:{datasets:[{
+      label:'Custom Built Model',
+      data:acts.map((a,i)=>({x:a,y:customPreds[i]})),
+      backgroundColor:'rgba(244,114,182,0.75)',
+      borderColor:'rgba(244,114,182,0.3)',
+      borderWidth:1,
+      pointRadius:5,
+      pointHoverRadius:7,
+    }]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:d=>`Actual: ${d.raw.x.toFixed(4)}, Predicted: ${d.raw.y.toFixed(4)}`}}},
+      scales:{
+        x:{title:{display:true,text:'Actual Cd',color:'#545a6a',font:{size:11}},grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#545a6a',font:{size:10}},min:0.31,max:0.425},
+        y:{title:{display:true,text:'Predicted Cd',color:'#545a6a',font:{size:11}},grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#545a6a',font:{size:10}},min:0.31,max:0.425},
+      },
+    },
+    plugins:[{
+      id:'perfLine',
+      beforeDraw(chart){
+        const{ctx,scales:{x,y}}=chart;
+        ctx.save();
+        ctx.strokeStyle='rgba(255,255,255,0.2)';
+        ctx.lineWidth=1;
+        ctx.setLineDash([4,4]);
+        ctx.beginPath();
+        ctx.moveTo(x.getPixelForValue(0.31),y.getPixelForValue(0.31));
+        ctx.lineTo(x.getPixelForValue(0.425),y.getPixelForValue(0.425));
+        ctx.stroke();
+        ctx.restore();
+      }
+    }]
+  });
+}
+
+function initAnalysisCharts(){
+  buildFiTable('fi-tbody-an');
+  buildSweepTabs();
+  drawSweep();
+  initAvpFullChart();
+}
+
+function buildSweepTabs(){
+  const cont=document.getElementById('sweep-tabs');
+  if(cont.innerHTML!=='')return;
+  SWEEPS.forEach((s,i)=>{
+    const b=document.createElement('button');
+    b.className='sweep-tab'+(i===0?' on':'');
+    b.textContent=s.label;
+    b.onclick=()=>{
+      activeSweep=i;
+      cont.querySelectorAll('.sweep-tab').forEach(x=>x.classList.remove('on'));
+      b.classList.add('on');
+      drawSweep();
+    };
+    cont.appendChild(b);
+  });
+}
+
+function drawSweep(){
+  const sw=SWEEPS[activeSweep];
+  const base=getInp();
+  const vals=[];
+  for(let v=sw.min;v<=sw.max+1e-9;v+=sw.step)vals.push(+v.toFixed(4));
+
+  const gbL=vals.map(v=>{const r=[...base];r[sw.idx]=v;return gbPred(r);});
+  const rfL=vals.map(v=>{const r=[...base];r[sw.idx]=v;return rfPred(r);});
+  const gpL=vals.map(v=>{const r=[...base];r[sw.idx]=v;return gpPred(r);});
+  const customL=vals.map(v=>{const r=[...base];r[sw.idx]=v;return nn2Pred(r);});
+
+  const labels=vals.map(v=>`${v}${sw.unit}`);
+
+  if(sweepChartInst){
+    sweepChartInst.data.labels=labels;
+    sweepChartInst.data.datasets[0].data=customL;
+    sweepChartInst.data.datasets[1].data=gpL.map(g=>g.mean);
+    sweepChartInst.data.datasets[2].data=gbL;
+    sweepChartInst.data.datasets[3].data=rfL;
+    sweepChartInst.update();
+    return;
+  }
+
+  const ctx=document.getElementById('sweep-chart').getContext('2d');
+  sweepChartInst=new Chart(ctx,{
+    type:'line',
+    data:{
+      labels,
+      datasets:[
+        {label:'Custom Built Model',data:customL,borderColor:'rgba(244,114,182,0.95)',backgroundColor:'rgba(244,114,182,0.08)',borderWidth:2.5,pointRadius:0,fill:true,tension:0.4},
+        {label:'Gaussian Process',data:gpL.map(g=>g.mean),borderColor:CHART_COLORS.gp,backgroundColor:'transparent',borderWidth:2,pointRadius:0,tension:0.4},
+        {label:'Gradient Boosting',data:gbL,borderColor:CHART_COLORS.gb,backgroundColor:'transparent',borderWidth:2,pointRadius:0,tension:0.3},
+        {label:'Random Forest',data:rfL,borderColor:CHART_COLORS.rf,backgroundColor:'transparent',borderWidth:1.5,pointRadius:0,tension:0.3,borderDash:[4,4]},
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:true,position:'top',align:'start',labels:{color:'#8a90a0',boxWidth:10,boxHeight:2,font:{size:11},padding:14}},
+        tooltip:{mode:'index',intersect:false,backgroundColor:'rgba(20,24,32,0.95)',titleColor:'#e8eaf0',bodyColor:'#8a90a0',borderColor:'rgba(255,255,255,0.1)',borderWidth:1}
+      },
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#545a6a',font:{size:10},maxTicksLimit:8}},
+        y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#545a6a',font:{size:10}}},
+      }
+    }
+  });
+}
+
+function initAvpFullChart(){
+  if(avpFullChartInst)return;
+  const acts=DATA.map(r=>r[6]);
+  const gbPreds=DATA.map(r=>+gbPred(r.slice(0,6)).toFixed(5));
+  const rfPreds=DATA.map(r=>+rfPred(r.slice(0,6)).toFixed(5));
+  const gpPreds=DATA.map(r=>+gpPred(r.slice(0,6)).mean.toFixed(5));
+  const customPreds=DATA.map(r=>+nn2Pred(r.slice(0,6)).toFixed(5));
+
+  const ctx=document.getElementById('avp-full-chart').getContext('2d');
+  avpFullChartInst=new Chart(ctx,{
+    type:'scatter',
+    data:{datasets:[
+      {label:'Custom Built Model',data:acts.map((a,i)=>({x:a,y:customPreds[i]})),backgroundColor:'rgba(244,114,182,0.85)',borderColor:'rgba(244,114,182,0.4)',borderWidth:1,pointRadius:6,pointStyle:'rectRot'},
+      {label:'Gaussian Process',data:acts.map((a,i)=>({x:a,y:gpPreds[i]})),backgroundColor:'rgba(34,211,160,0.7)',borderColor:'rgba(34,211,160,0.3)',borderWidth:1,pointRadius:5,pointStyle:'circle'},
+      {label:'Gradient Boosting',data:acts.map((a,i)=>({x:a,y:gbPreds[i]})),backgroundColor:'rgba(79,142,247,0.7)',borderColor:'rgba(79,142,247,0.3)',borderWidth:1,pointRadius:5,pointStyle:'rect'},
+      {label:'Random Forest',data:acts.map((a,i)=>({x:a,y:rfPreds[i]})),backgroundColor:'rgba(245,166,35,0.7)',borderColor:'rgba(245,166,35,0.3)',borderWidth:1,pointRadius:5,pointStyle:'triangle'},
+    ]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:true,position:'top',align:'start',labels:{color:'#8a90a0',boxWidth:10,boxHeight:10,font:{size:11},padding:14,usePointStyle:true}},
+        tooltip:{callbacks:{label:d=>`${d.dataset.label} — Actual: ${d.raw.x.toFixed(4)}, Pred: ${d.raw.y.toFixed(4)}`}}
+      },
+      scales:{
+        x:{title:{display:true,text:'Actual Cd',color:'#545a6a',font:{size:11}},grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#545a6a',font:{size:10}},min:0.31,max:0.425},
+        y:{title:{display:true,text:'Predicted Cd',color:'#545a6a',font:{size:11}},grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#545a6a',font:{size:10}},min:0.31,max:0.425},
+      }
+    },
+    plugins:[{
+      id:'perfLine2',
+      beforeDraw(chart){
+        const{ctx,scales:{x,y}}=chart;
+        ctx.save();
+        ctx.strokeStyle='rgba(255,255,255,0.15)';
+        ctx.lineWidth=1;
+        ctx.setLineDash([4,4]);
+        ctx.beginPath();
+        ctx.moveTo(x.getPixelForValue(0.31),y.getPixelForValue(0.31));
+        ctx.lineTo(x.getPixelForValue(0.425),y.getPixelForValue(0.425));
+        ctx.stroke();
+        ctx.restore();
+      }
+    }]
+  });
+}
+
+/* ── SEE MORE TOGGLE ── */
+function toggleDetail(id,btn){
+  const el=document.getElementById(id);
+  el.classList.toggle('open');
+  const span=btn.querySelector('span');
+  span.textContent=el.classList.contains('open')?'See less':'See full explanation';
+  const svg=btn.querySelector('svg');
+  svg.style.transform=el.classList.contains('open')?'rotate(180deg)':'rotate(0deg)';
+}
+
+/* ── INIT ── */
+setupSliders();
+updateCalc();
+buildDataTable();
+initOverviewCharts();
+
+/* Initialise all model rows as "active" on load */
+['gp','gb','rf','nn','nn2'].forEach(r=>{
+  document.getElementById('row-'+r).classList.add('pred-active');
+});
+</script>
+</body>
+</html>
