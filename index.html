@@ -3,984 +3,29 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WindsorML Aerodynamic Surrogate Dashboard</title>
+<title>Aerodynamic Drag Surrogate — WindsorML</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Display:wght@400;700&family=Roboto+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@300;400;500&family=Fraunces:ital,wght@0,300;0,700;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="dashboard.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="windsor_data.js"></script>
-<style>
-/* ── Material 3 Design Tokens ─────────────────────────────── */
-:root {
-  /* M3 Dark scheme — Aerodynamic teal/cyan primary */
-  --md-sys-color-primary:           #4DD9C0;
-  --md-sys-color-on-primary:        #00382F;
-  --md-sys-color-primary-container: #00514A;
-  --md-sys-color-on-primary-container: #7FF6DD;
-  --md-sys-color-secondary:         #81D4FA;
-  --md-sys-color-secondary-container: #00607A;
-  --md-sys-color-tertiary:          #F48FB1;
-  --md-sys-color-tertiary-container:#7B2D47;
-  --md-sys-color-error:             #FFB4AB;
-  --md-sys-color-error-container:   #93000A;
-  --md-sys-color-surface:           #0F1410;
-  --md-sys-color-surface-dim:       #0C100D;
-  --md-sys-color-surface-container:      #151C18;
-  --md-sys-color-surface-container-high: #1C2520;
-  --md-sys-color-surface-container-highest: #252E28;
-  --md-sys-color-on-surface:        #DCE5DD;
-  --md-sys-color-on-surface-variant:#8FAF99;
-  --md-sys-color-outline:           #5A7662;
-  --md-sys-color-outline-variant:   #2A3D30;
-  --md-sys-color-inverse-surface:   #DCE5DD;
-  --md-sys-color-inverse-on-surface:#2A3630;
-
-  /* Semantic aliases */
-  --bg:       var(--md-sys-color-surface);
-  --bg2:      var(--md-sys-color-surface-container);
-  --bg3:      var(--md-sys-color-surface-container-high);
-  --bg4:      var(--md-sys-color-surface-container-highest);
-  --accent:   var(--md-sys-color-primary);
-  --accent2:  var(--md-sys-color-secondary);
-  --pink:     var(--md-sys-color-tertiary);
-  --green:    #69F0AE;
-  --amber:    #FFD54F;
-  --red:      var(--md-sys-color-error);
-  --text:     var(--md-sys-color-on-surface);
-  --text2:    var(--md-sys-color-on-surface-variant);
-  --text3:    var(--md-sys-color-outline);
-  --border:   var(--md-sys-color-outline-variant);
-  --border2:  var(--md-sys-color-outline);
-  --nav-w:    260px;
-
-  /* M3 Typography */
-  --font-display: 'Google Sans Display', sans-serif;
-  --font-body:    'Google Sans', sans-serif;
-  --font-mono:    'Roboto Mono', monospace;
-
-  /* M3 Shape */
-  --shape-xs:   8px;
-  --shape-sm:   12px;
-  --shape-md:   16px;
-  --shape-lg:   24px;
-  --shape-xl:   28px;
-  --shape-full: 50px;
-
-  /* M3 Elevation (tonal) */
-  --elev1: rgba(77,217,192,0.05);
-  --elev2: rgba(77,217,192,0.08);
-  --elev3: rgba(77,217,192,0.11);
-}
-
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { font-size: 16px; scroll-behavior: smooth; }
-
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--font-body);
-  font-weight: 400;
-  line-height: 1.6;
-  display: flex;
-  min-height: 100vh;
-  -webkit-font-smoothing: antialiased;
-}
-
-/* ── SIDEBAR NAV — M3 Navigation Drawer ── */
-nav {
-  position: fixed; top: 0; left: 0;
-  width: var(--nav-w);
-  height: 100vh;
-  background: var(--bg2);
-  display: flex;
-  flex-direction: column;
-  z-index: 100;
-  overflow-y: auto;
-}
-
-.nav-header {
-  padding: 24px 20px 16px;
-  border-bottom: 1px solid var(--border);
-}
-
-.nav-header-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: var(--md-sys-color-primary-container);
-  color: var(--md-sys-color-on-primary-container);
-  padding: 4px 12px 4px 8px;
-  border-radius: var(--shape-full);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.05em;
-  margin-bottom: 12px;
-}
-
-.nav-header-chip svg { width: 14px; height: 14px; }
-
-.nav-title {
-  font-family: var(--font-display);
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--text);
-  line-height: 1.25;
-  margin-bottom: 4px;
-}
-
-.nav-subtitle {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--text3);
-}
-
-.nav-section-label {
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text3);
-  padding: 20px 20px 6px;
-}
-
-.nav-links { flex: 1; padding-bottom: 8px; }
-
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin: 2px 8px;
-  padding: 14px 16px;
-  border-radius: var(--shape-full);
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text2);
-  cursor: pointer;
-  transition: background 0.2s, color 0.2s;
-  user-select: none;
-}
-
-.nav-item:hover { background: rgba(77,217,192,0.08); color: var(--text); }
-
-.nav-item.active {
-  background: var(--md-sys-color-primary-container);
-  color: var(--md-sys-color-on-primary-container);
-}
-
-.nav-icon {
-  width: 22px; height: 22px;
-  flex-shrink: 0;
-  opacity: 0.8;
-}
-
-.nav-item.active .nav-icon { opacity: 1; }
-
-.nav-footer {
-  padding: 16px 20px;
-  border-top: 1px solid var(--border);
-  font-size: 11px;
-  color: var(--text3);
-  line-height: 1.7;
-}
-
-.nav-footer strong { color: var(--text2); font-weight: 500; }
-
-/* ── MAIN CONTENT ── */
-main { margin-left: var(--nav-w); flex: 1; min-height: 100vh; }
-.page { display: none; }
-.page.active { display: block; }
-
-/* ── PAGE HEADER ── */
-.page-header {
-  padding: 40px 48px 32px;
-  background: var(--bg2);
-  border-bottom: 1px solid var(--border);
-}
-
-.page-eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--accent);
-  margin-bottom: 12px;
-}
-
-.page-title {
-  font-family: var(--font-display);
-  font-size: 34px;
-  font-weight: 700;
-  color: var(--text);
-  line-height: 1.15;
-  margin-bottom: 12px;
-  letter-spacing: -0.5px;
-}
-
-.page-desc {
-  font-size: 15px;
-  color: var(--text2);
-  max-width: 600px;
-  line-height: 1.65;
-}
-
-.content { padding: 32px 48px; }
-
-/* ── M3 STAT CARDS ── */
-.stat-row {
-  display: grid;
-  grid-template-columns: repeat(4,1fr);
-  gap: 12px;
-  margin-bottom: 32px;
-}
-
-.stat-card {
-  background: var(--bg3);
-  border-radius: var(--shape-lg);
-  padding: 22px 20px;
-  position: relative;
-  overflow: hidden;
-  transition: background 0.2s;
-}
-
-.stat-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: var(--elev1);
-  pointer-events: none;
-}
-
-.stat-card:hover { background: var(--bg4); }
-
-.stat-label {
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text3);
-  margin-bottom: 10px;
-}
-
-.stat-value {
-  font-family: var(--font-display);
-  font-size: 32px;
-  font-weight: 700;
-  line-height: 1;
-  margin-bottom: 6px;
-}
-
-.stat-sub { font-size: 12px; color: var(--text3); }
-.c-primary { color: var(--accent); }
-.c-green    { color: var(--green); }
-.c-amber    { color: var(--amber); }
-.c-pink     { color: var(--pink); }
-.c-text     { color: var(--text); }
-
-/* ── M3 CARD ── */
-.m3-card {
-  background: var(--bg3);
-  border-radius: var(--shape-xl);
-  overflow: hidden;
-  transition: background 0.2s;
-  position: relative;
-}
-
-.m3-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: var(--elev1);
-  pointer-events: none;
-  border-radius: var(--shape-xl);
-}
-
-.m3-card:hover { background: var(--bg4); }
-
-.card-header {
-  padding: 20px 24px 16px;
-  border-bottom: 1px solid var(--border);
-}
-
-.card-title {
-  font-family: var(--font-display);
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--text);
-  margin-bottom: 3px;
-}
-
-.card-sub {
-  font-size: 12px;
-  color: var(--text3);
-}
-
-.card-body { padding: 24px; }
-
-.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
-.divider { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
-
-/* ── MODEL CARDS ── */
-.model-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-
-.model-card {
-  background: var(--bg3);
-  border-radius: var(--shape-xl);
-  overflow: hidden;
-  transition: background 0.25s, transform 0.25s;
-  position: relative;
-}
-
-.model-card:hover { background: var(--bg4); transform: translateY(-2px); }
-
-.model-indicator-bar {
-  height: 4px;
-  border-radius: 0;
-}
-
-.model-card-body { padding: 22px 22px 20px; }
-
-.model-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 12px;
-}
-
-.model-name {
-  font-family: var(--font-display);
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--text);
-  line-height: 1.3;
-}
-
-/* M3 Assist Chips for badges */
-.m3-chip {
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 12px;
-  border-radius: var(--shape-full);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  flex-shrink: 0;
-  margin-left: 10px;
-  margin-top: 2px;
-  border: 1px solid;
-}
-
-.chip-green  { background: rgba(105,240,174,0.12); color: var(--green);  border-color: rgba(105,240,174,0.3); }
-.chip-blue   { background: rgba(129,212,250,0.12); color: var(--accent2); border-color: rgba(129,212,250,0.3); }
-.chip-amber  { background: rgba(255,213,79,0.12);  color: var(--amber);  border-color: rgba(255,213,79,0.3); }
-.chip-purple { background: rgba(206,147,216,0.12); color: #CE93D8;       border-color: rgba(206,147,216,0.3); }
-.chip-pink   { background: rgba(244,143,177,0.12); color: var(--pink);   border-color: rgba(244,143,177,0.3); }
-.chip-teal   { background: rgba(77,217,192,0.12);  color: var(--accent); border-color: rgba(77,217,192,0.3); }
-
-.model-summary {
-  font-size: 13px;
-  color: var(--text2);
-  line-height: 1.7;
-  margin-bottom: 16px;
-}
-
-/* M3 metric pills */
-.model-metrics {
-  display: grid;
-  grid-template-columns: repeat(3,1fr);
-  gap: 8px;
-  margin-bottom: 14px;
-}
-
-.metric-pill {
-  background: var(--bg4);
-  border-radius: var(--shape-md);
-  padding: 10px 12px;
-}
-
-.metric-pill-label {
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text3);
-  margin-bottom: 4px;
-}
-
-.metric-pill-value {
-  font-family: var(--font-mono);
-  font-size: 15px;
-  font-weight: 500;
-}
-
-/* M3 linear progress */
-.m3-progress {
-  height: 4px;
-  background: var(--border);
-  border-radius: 2px;
-  overflow: hidden;
-  margin-top: 6px;
-}
-
-.m3-progress-fill {
-  height: 100%;
-  border-radius: 2px;
-  transition: width 1.2s cubic-bezier(.4,0,.2,1);
-}
-
-/* Expand button */
-.expand-btn {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--accent);
-  cursor: pointer;
-  background: none;
-  border: none;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-family: var(--font-body);
-  transition: color 0.2s;
-  letter-spacing: 0.02em;
-}
-
-.expand-btn:hover { color: var(--md-sys-color-on-primary-container); }
-
-.model-detail { display: none; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
-.model-detail.open { display: block; }
-
-.detail-label {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--text3);
-  margin-bottom: 7px;
-}
-
-.detail-text { font-size: 13px; color: var(--text2); line-height: 1.75; margin-bottom: 14px; }
-
-.detail-code {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--text2);
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: var(--shape-md);
-  padding: 14px 16px;
-  line-height: 1.8;
-  margin-bottom: 14px;
-  white-space: pre-wrap;
-}
-
-.sample-chip {
-  display: inline-block;
-  font-size: 11px;
-  font-weight: 500;
-  padding: 4px 10px;
-  border-radius: var(--shape-full);
-  margin: 0 4px 4px 0;
-}
-
-.sc-current { background: rgba(77,217,192,0.15);  color: var(--accent); }
-.sc-needed  { background: rgba(77,217,192,0.07);  color: var(--text3); }
-.sc-warn    { background: rgba(255,213,79,0.12);  color: var(--amber); }
-
-/* ── PERFORMANCE COMPARE ROW ── */
-.perf-row { display: grid; grid-template-columns: repeat(5,1fr); gap: 10px; margin-bottom: 16px; }
-
-.perf-card {
-  background: var(--bg4);
-  border-radius: var(--shape-lg);
-  padding: 16px 12px;
-  text-align: center;
-}
-
-.perf-name { font-size: 11px; color: var(--text3); margin-bottom: 10px; line-height: 1.4; }
-.perf-rmse { font-family: var(--font-mono); font-size: 17px; font-weight: 500; }
-.perf-r2   { font-size: 10px; color: var(--text3); margin-top: 4px; }
-.perf-bar  { height: 4px; background: var(--border); border-radius: 2px; margin-top: 10px; overflow: hidden; }
-.perf-fill { height: 100%; border-radius: 2px; }
-
-/* ── RMSE SCALE ── */
-.rmse-scale {
-  display: flex;
-  background: var(--bg4);
-  border-radius: var(--shape-lg);
-  overflow: hidden;
-  margin-bottom: 28px;
-}
-
-.rmse-tier {
-  flex: 1;
-  padding: 14px 16px;
-  border-right: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.rmse-tier:last-child { border-right: none; }
-
-.rmse-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-
-.rmse-text { font-size: 12px; color: var(--text2); line-height: 1.5; }
-.rmse-text strong { color: var(--text); font-weight: 600; display: block; font-size: 13px; }
-
-/* ── CALCULATOR ── */
-.calc-layout { display: grid; grid-template-columns: 1fr 320px; gap: 20px; align-items: start; }
-
-.calc-panel {
-  background: var(--bg3);
-  border-radius: var(--shape-xl);
-  overflow: hidden;
-}
-
-.calc-panel-head {
-  padding: 18px 22px;
-  border-bottom: 1px solid var(--border);
-  background: var(--elev1);
-}
-
-.calc-panel-title {
-  font-family: var(--font-display);
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text);
-}
-
-/* M3 Segmented Button for model selection */
-.segmented-btn-group {
-  display: flex;
-  gap: 0;
-  border: 1px solid var(--border);
-  border-radius: var(--shape-full);
-  overflow: hidden;
-  background: var(--bg4);
-  margin-bottom: 20px;
-}
-
-.seg-btn {
-  flex: 1;
-  padding: 8px 6px;
-  font-size: 11px;
-  font-weight: 500;
-  border: none;
-  background: transparent;
-  color: var(--text3);
-  cursor: pointer;
-  font-family: var(--font-body);
-  transition: background 0.2s, color 0.2s;
-  white-space: nowrap;
-  border-right: 1px solid var(--border);
-}
-
-.seg-btn:last-child { border-right: none; }
-.seg-btn:hover { background: rgba(77,217,192,0.06); color: var(--text); }
-
-.seg-btn.active-teal   { background: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container); }
-.seg-btn.active-green  { background: rgba(105,240,174,0.18); color: var(--green); }
-.seg-btn.active-blue   { background: rgba(129,212,250,0.15); color: var(--accent2); }
-.seg-btn.active-amber  { background: rgba(255,213,79,0.15); color: var(--amber); }
-.seg-btn.active-purple { background: rgba(206,147,216,0.15); color: #CE93D8; }
-.seg-btn.active-pink   { background: rgba(244,143,177,0.15); color: var(--pink); }
-
-/* Param groups */
-.param-group { border-bottom: 1px solid var(--border); }
-.param-group:last-child { border-bottom: none; }
-
-.param-group-label {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--text3);
-  padding: 14px 22px 4px;
-}
-
-.param-sliders { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 28px; padding: 10px 22px 18px; }
-.slider-row { display: flex; flex-direction: column; gap: 6px; }
-
-.slider-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-}
-
-.slider-lbl { font-size: 13px; font-weight: 500; color: var(--text2); }
-
-.slider-val {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--accent);
-}
-
-.slider-bounds {
-  display: flex;
-  justify-content: space-between;
-  font-size: 10px;
-  color: var(--text3);
-  font-family: var(--font-mono);
-  margin-top: 1px;
-}
-
-/* M3 Slider */
-input[type=range] {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 100%;
-  height: 16px;
-  background: transparent;
-  outline: none;
-  cursor: pointer;
-  position: relative;
-}
-
-input[type=range]::-webkit-slider-runnable-track {
-  height: 4px;
-  background: var(--border);
-  border-radius: 2px;
-}
-
-input[type=range]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 20px;
-  height: 20px;
-  background: var(--accent);
-  border-radius: 50%;
-  cursor: pointer;
-  margin-top: -8px;
-  border: 0;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.4);
-  transition: transform 0.15s, box-shadow 0.15s;
-}
-
-input[type=range]::-webkit-slider-thumb:hover {
-  transform: scale(1.15);
-  box-shadow: 0 0 0 8px rgba(77,217,192,0.12), 0 1px 4px rgba(0,0,0,0.4);
-}
-
-input[type=range]::-webkit-slider-thumb:active {
-  transform: scale(1.2);
-  box-shadow: 0 0 0 12px rgba(77,217,192,0.16), 0 1px 4px rgba(0,0,0,0.4);
-}
-
-/* ── RESULT PANEL ── */
-.result-panel { display: flex; flex-direction: column; gap: 12px; position: sticky; top: 24px; }
-
-.cd-card {
-  background: var(--md-sys-color-primary-container);
-  border-radius: var(--shape-xl);
-  padding: 28px 20px 24px;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-}
-
-.cd-card::after {
-  content: '';
-  position: absolute;
-  width: 160px; height: 160px;
-  border-radius: 50%;
-  background: rgba(77,217,192,0.12);
-  top: -40px; right: -40px;
-  pointer-events: none;
-}
-
-.cd-label {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--md-sys-color-on-primary-container);
-  opacity: 0.7;
-  margin-bottom: 10px;
-}
-
-.cd-number {
-  font-family: var(--font-display);
-  font-size: 56px;
-  font-weight: 700;
-  line-height: 1;
-  margin-bottom: 10px;
-  transition: color 0.4s;
-  color: var(--md-sys-color-on-primary-container);
-}
-
-.cd-tag {
-  display: inline-block;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  padding: 5px 16px;
-  border-radius: var(--shape-full);
-  background: rgba(0,0,0,0.2);
-  color: var(--md-sys-color-on-primary-container);
-  transition: background 0.4s;
-}
-
-.cd-hi .cd-number  { color: #FFB4AB; }
-.cd-low .cd-number { color: #69F0AE; }
-
-.model-ind { font-size: 11px; color: rgba(77,217,192,0.6); margin-top: 8px; font-family: var(--font-mono); }
-
-/* M3 List for predictions */
-.pred-list {
-  background: var(--bg3);
-  border-radius: var(--shape-xl);
-  overflow: hidden;
-}
-
-.pred-list-head {
-  padding: 12px 18px;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text3);
-  border-bottom: 1px solid var(--border);
-  background: var(--bg4);
-}
-
-.pred-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 18px;
-  border-bottom: 1px solid var(--border);
-  transition: background 0.15s;
-}
-
-.pred-item:last-child { border-bottom: none; }
-.pred-item:hover { background: rgba(77,217,192,0.04); }
-
-.pred-item-label {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 13px;
-  color: var(--text2);
-}
-
-.pred-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.pred-val { font-family: var(--font-mono); font-size: 13px; color: var(--text); }
-.pred-active .pred-item-label { color: var(--text); font-weight: 500; }
-
-.unc-card {
-  background: var(--bg3);
-  border-radius: var(--shape-lg);
-  padding: 14px 18px;
-}
-
-.unc-label { font-size: 10px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text3); margin-bottom: 5px; }
-.unc-value { font-family: var(--font-mono); font-size: 16px; color: var(--green); margin-bottom: 4px; }
-.unc-note  { font-size: 11px; color: var(--text3); line-height: 1.6; }
-
-/* ── ANALYSIS PAGE ── */
-.chart-wrap { position: relative; width: 100%; }
-
-/* M3 Filter Chips for sweep tabs */
-.filter-chips { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
-
-.filter-chip {
-  font-size: 12px;
-  font-weight: 500;
-  padding: 6px 16px;
-  border-radius: var(--shape-full);
-  border: 1px solid var(--border);
-  color: var(--text2);
-  cursor: pointer;
-  background: transparent;
-  font-family: var(--font-body);
-  transition: all 0.2s;
-}
-
-.filter-chip:hover { border-color: var(--border2); color: var(--text); background: rgba(77,217,192,0.04); }
-.filter-chip.active { background: var(--md-sys-color-primary-container); border-color: transparent; color: var(--md-sys-color-on-primary-container); }
-
-/* ── FI TABLE ── */
-.fi-table { width: 100%; border-collapse: collapse; }
-.fi-table th { font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text3); text-align: left; padding: 0 0 12px; border-bottom: 1px solid var(--border); }
-.fi-table td { padding: 10px 0; border-bottom: 1px solid var(--border); vertical-align: middle; }
-.fi-table tr:last-child td { border-bottom: none; }
-.fi-rank { font-family: var(--font-mono); font-size: 11px; color: var(--text3); width: 28px; }
-.fi-name { font-size: 13px; color: var(--text2); font-weight: 500; }
-.fi-bar-cell { padding: 0 16px; }
-.fi-bar-bg { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
-.fi-bar-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 1.4s cubic-bezier(.4,0,.2,1); }
-.fi-score { font-family: var(--font-mono); font-size: 12px; color: var(--text3); text-align: right; }
-
-/* ── DATASET PAGE ── */
-.dataset-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 28px; }
-
-.ds-card {
-  background: var(--bg3);
-  border-radius: var(--shape-xl);
-  overflow: hidden;
-  transition: background 0.2s;
-}
-
-.ds-card:hover { background: var(--bg4); }
-
-.ds-card-head {
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--border);
-}
-
-.ds-status { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
-.ds-name { font-family: var(--font-display); font-size: 17px; font-weight: 700; color: var(--text); }
-.ds-body { padding: 16px 20px; }
-.ds-desc { font-size: 12px; color: var(--text2); line-height: 1.65; margin-bottom: 12px; }
-.ds-tags { display: flex; flex-wrap: wrap; gap: 6px; }
-
-.ds-tag {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  padding: 4px 10px;
-  border-radius: var(--shape-full);
-  border: 1px solid var(--border);
-  color: var(--text3);
-  background: transparent;
-}
-
-.ds-tag.active { background: var(--md-sys-color-primary-container); border-color: transparent; color: var(--md-sys-color-on-primary-container); }
-
-/* ── INFO BOX ── */
-.info-box {
-  background: rgba(77,217,192,0.05);
-  border: 1px solid rgba(77,217,192,0.2);
-  border-radius: var(--shape-xl);
-  padding: 24px 28px;
-  margin-bottom: 24px;
-  font-size: 14px;
-  color: var(--text2);
-  line-height: 1.8;
-}
-
-.info-box-title {
-  font-family: var(--font-display);
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--accent);
-  margin-bottom: 12px;
-}
-
-/* ── DATA TABLE ── */
-.data-table-wrap { background: var(--bg3); border-radius: var(--shape-xl); overflow: hidden; overflow-x: auto; }
-.data-table-label { padding: 14px 20px; font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text3); border-bottom: 1px solid var(--border); background: var(--bg4); }
-
-table.dt { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 12px; }
-table.dt th { padding: 10px 14px; text-align: right; font-family: var(--font-body); font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text3); border-bottom: 1px solid var(--border); background: var(--bg4); }
-table.dt th:first-child { text-align: left; padding-left: 20px; }
-table.dt td { padding: 9px 14px; text-align: right; border-bottom: 1px solid var(--border); color: var(--text2); }
-table.dt td:first-child { text-align: left; padding-left: 20px; color: var(--text3); font-family: var(--font-body); font-size: 11px; }
-table.dt tr:last-child td { border-bottom: none; }
-table.dt tr:hover td { background: rgba(77,217,192,0.03); }
-
-.cd-low-c { color: var(--green) !important; }
-.cd-mid-c { color: var(--accent) !important; }
-.cd-hi-c  { color: var(--amber) !important; }
-
-/* ── SECTION HEAD ── */
-.section-head { margin-bottom: 20px; }
-.section-title { font-family: var(--font-display); font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 5px; }
-.section-sub { font-size: 13px; color: var(--text3); }
-
-/* ── ANIMATIONS ── */
-@keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
-.fade { animation: fadeUp 0.5s ease both; }
-.d1 { animation-delay: 0.05s; } .d2 { animation-delay: 0.10s; }
-.d3 { animation-delay: 0.15s; } .d4 { animation-delay: 0.20s; }
-.d5 { animation-delay: 0.25s; }
-
-/* ── PARAM DEF BOX ── */
-.param-def-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 28px; }
-
-.param-def-item {
-  background: var(--bg4);
-  border-radius: var(--shape-md);
-  padding: 14px 16px;
-  border-left: 3px solid var(--accent);
-}
-
-.param-def-name { font-family: var(--font-mono); font-size: 12px; font-weight: 500; color: var(--accent); margin-bottom: 5px; }
-.param-def-text { font-size: 12px; color: var(--text2); line-height: 1.6; }
-
-/* ── MOBILE NAV ── */
-.hamburger {
-  display: none;
-  position: fixed;
-  top: 12px; left: 12px;
-  z-index: 200;
-  background: var(--bg3);
-  border: 1px solid var(--border);
-  border-radius: var(--shape-md);
-  padding: 10px;
-  cursor: pointer;
-  color: var(--text);
-  transition: background 0.2s;
-}
-.hamburger:hover { background: var(--bg4); }
-.nav-overlay {
-  display: none;
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,0.55);
-  z-index: 99;
-}
-@media (max-width: 768px) {
-  :root { --nav-w: 260px; }
-  .hamburger { display: flex; align-items: center; justify-content: center; }
-  nav {
-    transform: translateX(-100%);
-    transition: transform 0.28s cubic-bezier(.4,0,.2,1);
-    z-index: 150;
-  }
-  nav.open { transform: translateX(0); }
-  .nav-overlay.open { display: block; }
-  main { margin-left: 0; padding-top: 56px; }
-  .page-header { padding: 24px 20px 20px; }
-  .content { padding: 20px 16px; }
-  .stat-row { grid-template-columns: 1fr 1fr; }
-  .perf-row { grid-template-columns: 1fr 1fr; gap: 8px; }
-  .perf-row .perf-card:last-child { grid-column: 1/-1; }
-  .grid-2 { grid-template-columns: 1fr; }
-  .grid-3 { grid-template-columns: 1fr; }
-  .model-grid { grid-template-columns: 1fr; }
-  .calc-layout { grid-template-columns: 1fr; }
-  .result-panel { position: static; }
-  .dataset-grid { grid-template-columns: 1fr; }
-  .rmse-scale { flex-direction: column; }
-  .rmse-tier { border-right: none; border-bottom: 1px solid var(--border); }
-  .rmse-tier:last-child { border-bottom: none; }
-  .param-sliders { grid-template-columns: 1fr; }
-  .param-def-grid { grid-template-columns: 1fr; }
-  .page-title { font-size: 24px; }
-}
-</style>
 </head>
 <body>
 
-<!-- ── SIDEBAR ── -->
-<button class="hamburger" id="ham-btn" onclick="toggleNav()" aria-label="Open navigation">
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+<!-- hamburger (mobile) -->
+<button class="hamburger" id="ham-btn" onclick="toggleNav()" aria-label="Menu">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
     <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
   </svg>
 </button>
 <div class="nav-overlay" id="nav-overlay" onclick="closeNav()"></div>
+
+<!-- ── SIDEBAR ── -->
 <nav id="main-nav">
   <div class="nav-header">
-    <div class="nav-header-chip">
-      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1l2 5h5l-4 3 1.5 5L8 11l-4.5 3L5 9 1 6h5z"/></svg>
-      WindsorML · v2.0
-    </div>
-    <div class="nav-title">Aerodynamic Drag<br>Surrogate Suite</div>
-    <div class="nav-subtitle">Mahindra Research Valley · 2026</div>
+    <div class="nav-wordmark">WindsorML · v2.0</div>
+    <div class="nav-title">Aerodynamic<br><em>Drag Surrogate</em></div>
+    <div class="nav-version">© 2026 Rutej Talati</div>
   </div>
 
   <div class="nav-links">
@@ -988,23 +33,23 @@ table.dt tr:hover td { background: rgba(77,217,192,0.03); }
 
     <div class="nav-item active" onclick="showPage('overview',this)">
       <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-        <rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/>
-        <rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/>
+        <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
+        <rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>
       </svg>
       Overview
     </div>
 
     <div class="nav-item" onclick="showPage('models',this)">
       <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-        <path d="M12 2l3 7h7l-5.7 4.1 2.2 6.9L12 16l-6.5 4 2.2-6.9L2 9h7z"/>
+        <circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1l2.1-2.1M17 7l2.1-2.1"/>
       </svg>
       ML Models
     </div>
 
     <div class="nav-item" onclick="showPage('calculator',this)">
       <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-        <rect x="4" y="2" width="16" height="20" rx="3"/>
-        <path d="M8 8h8M8 12h8M8 16h4"/>
+        <rect x="4" y="2" width="16" height="20" rx="2"/>
+        <path d="M8 7h8M8 11h8M8 15h4"/>
       </svg>
       CFD Calculator
     </div>
@@ -1018,108 +63,122 @@ table.dt tr:hover td { background: rgba(77,217,192,0.03); }
 
     <div class="nav-item" onclick="showPage('dataset',this)">
       <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-        <ellipse cx="12" cy="6" rx="9" ry="4"/>
-        <path d="M3 6v6c0 2.2 4 4 9 4s9-1.8 9-4V6"/>
-        <path d="M3 12v6c0 2.2 4 4 9 4s9-1.8 9-4v-6"/>
+        <ellipse cx="12" cy="6" rx="9" ry="3.5"/>
+        <path d="M3 6v6c0 1.9 4 3.5 9 3.5s9-1.6 9-3.5V6"/>
+        <path d="M3 12v6c0 1.9 4 3.5 9 3.5s9-1.6 9-3.5v-6"/>
       </svg>
       Dataset
     </div>
   </div>
 
   <div class="nav-footer">
-    <strong>© 2026 Rutej Talati</strong><br>
     WindsorML Drag Surrogate<br>
     Research &amp; Development
   </div>
 </nav>
 
-
 <main>
 
-<!-- ══ PAGE: OVERVIEW ══ -->
+<!-- ══ OVERVIEW ══ -->
 <div class="page active" id="page-overview">
   <div class="page-header">
     <div class="page-eyebrow">Dashboard · Overview</div>
-    <div class="page-title">Aerodynamic Drag Surrogate<br>Model Performance Summary</div>
-    <div class="page-desc">Five machine learning surrogate models trained on 355 WindsorML Wall-Modelled LES simulations to predict drag coefficient C<sub>d</sub> from Windsor body geometry parameters, the canonical automotive bluff body benchmark.</div>
+    <div class="page-title">Aerodynamic Drag Surrogate<br><em>Model Performance Summary</em></div>
+    <div class="page-desc">Five machine learning surrogate models trained on 355 WindsorML Wall-Modelled LES simulations to predict drag coefficient C<sub>d</sub> from Windsor body geometry parameters.</div>
   </div>
 
   <div class="content">
+    <!-- stat row -->
     <div class="stat-row fade">
       <div class="stat-card">
         <div class="stat-label">Training Simulations</div>
-        <div class="stat-value c-primary">355</div>
+        <div class="stat-value">355</div>
         <div class="stat-sub">WindsorML WMLES CFD runs</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Best CV RMSE</div>
-        <div class="stat-value c-green">0.00779</div>
-        <div class="stat-sub">Custom Stack (17.6% better than GP)</div>
+        <div class="stat-value">0.00779</div>
+        <div class="stat-sub">Custom Stack — 17.6% better than GP alone</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Input Parameters</div>
-        <div class="stat-value c-primary">7</div>
+        <div class="stat-value">7</div>
         <div class="stat-sub">Windsor body geometry ratios</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Models Deployed</div>
-        <div class="stat-value c-text">05</div>
+        <div class="stat-value">5</div>
         <div class="stat-sub">GP · GB · RF · MLP · Custom Stack</div>
       </div>
     </div>
 
+    <!-- model performance -->
     <div class="section-head">
       <div class="section-title">Model Performance Comparison</div>
-      <div class="section-sub">5-fold cross-validated RMSE and R² on 355 WindsorML samples. Lower RMSE is better.</div>
+      <div class="section-sub">5-fold cross-validated RMSE and R² on 355 WindsorML samples. Lower RMSE is better. Bar width = relative accuracy.</div>
     </div>
 
     <div class="perf-row fade d1">
-      <div class="perf-card">
+      <div class="perf-card perf-best">
         <div class="perf-name">Custom Built Model</div>
-        <div class="perf-rmse" style="color:var(--pink)">0.00779</div>
+        <div class="perf-rmse">0.00779</div>
         <div class="perf-r2">R² = 0.935 (CV)</div>
-        <div class="perf-bar"><div class="perf-fill" style="width:100%;background:var(--pink)"></div></div>
+        <div class="perf-bar"><div class="perf-fill" style="width:100%"></div></div>
       </div>
       <div class="perf-card">
         <div class="perf-name">Gaussian Process</div>
-        <div class="perf-rmse" style="color:var(--green)">0.00946</div>
+        <div class="perf-rmse">0.00946</div>
         <div class="perf-r2">R² = 0.905 (CV)</div>
-        <div class="perf-bar"><div class="perf-fill" style="width:82%;background:var(--green)"></div></div>
+        <div class="perf-bar"><div class="perf-fill" style="width:82%"></div></div>
       </div>
       <div class="perf-card">
         <div class="perf-name">Random Forest</div>
-        <div class="perf-rmse" style="color:var(--amber)">0.01418</div>
+        <div class="perf-rmse">0.01418</div>
         <div class="perf-r2">R² = 0.785 (CV)</div>
-        <div class="perf-bar"><div class="perf-fill" style="width:55%;background:var(--amber)"></div></div>
+        <div class="perf-bar"><div class="perf-fill" style="width:55%"></div></div>
       </div>
       <div class="perf-card">
         <div class="perf-name">Gradient Boosting</div>
-        <div class="perf-rmse" style="color:var(--accent2)">0.01624</div>
+        <div class="perf-rmse">0.01624</div>
         <div class="perf-r2">R² = 0.718 (CV)</div>
-        <div class="perf-bar"><div class="perf-fill" style="width:48%;background:var(--accent2)"></div></div>
+        <div class="perf-bar"><div class="perf-fill" style="width:48%"></div></div>
       </div>
       <div class="perf-card">
         <div class="perf-name">Neural Network (MLP)</div>
-        <div class="perf-rmse" style="color:#CE93D8">0.01850</div>
-        <div class="perf-r2">R² = 0.71 (355-sample result)</div>
-        <div class="perf-bar"><div class="perf-fill" style="width:42%;background:#CE93D8"></div></div>
+        <div class="perf-rmse">0.01850</div>
+        <div class="perf-r2">R² = 0.71 (355 samples)</div>
+        <div class="perf-bar"><div class="perf-fill" style="width:42%"></div></div>
       </div>
     </div>
 
+    <!-- RMSE scale -->
     <div class="rmse-scale fade d2">
-      <div class="rmse-tier"><span class="rmse-dot" style="background:var(--green)"></span><div class="rmse-text"><strong>Below 0.003</strong>Wind tunnel grade</div></div>
-      <div class="rmse-tier"><span class="rmse-dot" style="background:var(--accent)"></span><div class="rmse-text"><strong>0.003 to 0.010</strong>Engineering grade — design screening</div></div>
-      <div class="rmse-tier"><span class="rmse-dot" style="background:var(--amber)"></span><div class="rmse-text"><strong>0.010 to 0.020</strong>Acceptable for early-stage ranking</div></div>
-      <div class="rmse-tier"><span class="rmse-dot" style="background:var(--red)"></span><div class="rmse-text"><strong>Above 0.020</strong>Indicative only</div></div>
+      <div class="rmse-tier">
+        <span class="rmse-dot" style="background:#e0e0e0"></span>
+        <div class="rmse-text"><strong>Below 0.003</strong>Wind tunnel grade</div>
+      </div>
+      <div class="rmse-tier">
+        <span class="rmse-dot" style="background:#a0a0a0"></span>
+        <div class="rmse-text"><strong>0.003 to 0.010</strong>Engineering grade</div>
+      </div>
+      <div class="rmse-tier">
+        <span class="rmse-dot" style="background:#606060"></span>
+        <div class="rmse-text"><strong>0.010 to 0.020</strong>Early-stage ranking</div>
+      </div>
+      <div class="rmse-tier">
+        <span class="rmse-dot" style="background:#383838"></span>
+        <div class="rmse-text"><strong>Above 0.020</strong>Indicative only</div>
+      </div>
     </div>
 
     <hr class="divider">
 
+    <!-- feature importance + actual vs predicted -->
     <div class="grid-2 fade d3">
-      <div class="m3-card">
+      <div class="card">
         <div class="card-header">
           <div class="card-title">Feature Importance</div>
-          <div class="card-sub">Random Forest — Windsor body geometry parameters ranked by Gini impurity</div>
+          <div class="card-sub">Random Forest — Gini impurity ranking on 355 WindsorML samples</div>
         </div>
         <div class="card-body">
           <table class="fi-table">
@@ -1129,25 +188,26 @@ table.dt tr:hover td { background: rgba(77,217,192,0.03); }
         </div>
       </div>
 
-      <div class="m3-card">
+      <div class="card">
         <div class="card-header">
           <div class="card-title">Actual vs Predicted — Custom Built Model</div>
-          <div class="card-sub">Out-of-fold CV predictions on 355 WindsorML samples. Points on the diagonal indicate perfect prediction.</div>
+          <div class="card-sub">Out-of-fold CV on 355 samples. Point size encodes prediction error — larger = higher error. Hover for details.</div>
         </div>
         <div class="card-body">
           <div class="chart-wrap" style="height:280px"><canvas id="avp-chart"></canvas></div>
+          <div class="chart-caption">Diagonal line = perfect prediction. Points near the line indicate accurate predictions.</div>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ══ PAGE: MODELS ══ -->
+<!-- ══ MODELS ══ -->
 <div class="page" id="page-models">
   <div class="page-header">
     <div class="page-eyebrow">ML Models · Methodology</div>
-    <div class="page-title">Five Models — Purpose,<br>Architecture &amp; Accuracy</div>
-    <div class="page-desc">Each model was selected for a specific engineering or statistical reason. All five are trained on 355 WindsorML Wall-Modelled LES simulations. Expand any card to read the full rationale, sample size requirements, and accuracy context.</div>
+    <div class="page-title">Five Models —<br><em>Architecture &amp; Accuracy</em></div>
+    <div class="page-desc">Each model was selected for a specific engineering or statistical reason. All five are trained on 355 WindsorML Wall-Modelled LES simulations. Expand any card for full rationale and configuration.</div>
   </div>
 
   <div class="content">
@@ -1155,186 +215,164 @@ table.dt tr:hover td { background: rgba(77,217,192,0.03); }
 
       <!-- GP -->
       <div class="model-card fade d1">
-        <div class="model-indicator-bar" style="background:linear-gradient(90deg,var(--green),#00897B)"></div>
+        <div class="model-indicator-bar" style="background:#c0c0c0"></div>
         <div class="model-card-body">
           <div class="model-header">
             <div class="model-name">Gaussian Process<br>Regression</div>
-            <span class="m3-chip chip-green">Best single model</span>
+            <span class="model-badge badge-top">Best single model</span>
           </div>
-          <p class="model-summary">A probabilistic model that predicts a full probability distribution over Cd rather than a single value, giving both a mean prediction and a calibrated confidence interval at every point in the Windsor geometry parameter space.</p>
+          <p class="model-summary">A probabilistic model predicting a full distribution over Cd — mean plus calibrated confidence interval at every Windsor geometry point. Optimal for the 355-sample regime.</p>
           <div class="model-metrics">
             <div class="metric-pill">
               <div class="metric-pill-label">CV RMSE</div>
-              <div class="metric-pill-value" style="color:var(--green)">0.00946</div>
-              <div class="m3-progress"><div class="m3-progress-fill" style="width:90%;background:var(--green)"></div></div>
+              <div class="metric-pill-value">0.00946</div>
+              <div class="m3-progress"><div class="m3-progress-fill" style="width:82%"></div></div>
             </div>
             <div class="metric-pill">
               <div class="metric-pill-label">Train R²</div>
-              <div class="metric-pill-value" style="color:var(--green)">1.000</div>
+              <div class="metric-pill-value">1.000</div>
             </div>
             <div class="metric-pill">
               <div class="metric-pill-label">Uncertainty</div>
-              <div class="metric-pill-value" style="color:var(--green)">Yes ±σ</div>
+              <div class="metric-pill-value">Yes ±σ</div>
             </div>
           </div>
           <button class="expand-btn" onclick="toggleDetail('gp-detail',this)">
-            <span>See full explanation</span>
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5l4 4 4-4"/></svg>
+            <span>Full details</span>
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5l4 4 4-4"/></svg>
           </button>
           <div class="model-detail" id="gp-detail">
-            <div class="detail-label">Why this model was chosen</div>
-            <div class="detail-text">The Gaussian Process is the statistically optimal choice for the 355-sample WindsorML dataset. Unlike any other model in this suite, it does not predict a single number but a complete probability distribution over possible Cd values. Every prediction carries a calibrated confidence interval. In regions of the Windsor parameter space that are densely sampled by the 355 WMLES runs, GP uncertainty collapses to near zero. In sparse regions, uncertainty inflates, acting as a direct signal that a new simulation should be placed there. This is the foundation of Bayesian optimisation: the next CFD run is always placed at the point of maximum expected information gain rather than chosen arbitrarily. The model uses a Matern covariance kernel with smoothness parameter 2.5, which assumes the drag surface is twice differentiable but not infinitely smooth. This is physically appropriate for Windsor body aerodynamics near the critical fastback separation phenomena.</div>
-            <div class="detail-label">Sample size requirements</div>
-            <span class="sample-chip sc-current">355 samples (WindsorML) — optimal GP range</span>
+            <div class="detail-label">Why this model</div>
+            <div class="detail-text">The GP is statistically optimal for the 355-sample WindsorML dataset. Unlike any other model, it predicts a complete probability distribution — every prediction carries a calibrated confidence interval. In densely sampled regions, GP uncertainty collapses to near zero. In sparse regions it inflates, acting as a direct signal for where the next CFD simulation should be placed (Bayesian optimisation). Uses a Matern(ν=2.5) kernel — twice-differentiable, appropriate for smooth aerodynamic surfaces.</div>
+            <div class="detail-label">Sample size context</div>
+            <span class="sample-chip sc-current">355 samples — optimal GP range</span>
             <span class="sample-chip sc-needed">500+ — Neural Network begins to compete</span>
             <span class="sample-chip sc-needed">1000+ — GP matrix inversion becomes costly</span>
-            <div style="margin-bottom:14px"></div>
-            <div class="detail-label">Technical configuration</div>
-            <div class="detail-code">Kernel: ConstantKernel(1.0) x Matern(nu=2.5, l=1.0)
-Normalise outputs: True  Alpha: 1e-6
-Optimiser restarts: 10  Scaling: StandardScaler
-Uncertainty output: mean +/- 1 sigma at every query point</div>
-            <div class="detail-label">Accuracy on WindsorML</div>
-            <div class="detail-text">On the 355-sample WindsorML dataset, the GP achieves CV RMSE of 0.00946, which places it firmly in the engineering-grade band. It outperforms Gradient Boosting by 42% and Random Forest by 33% in RMSE. The Neural Network is now competitive at 355 samples but still trails the GP. Above approximately 1000 samples, the GP cubic scaling cost would make it impractical to retrain, at which point the MLP and gradient-boosted trees would become preferred.</div>
+            <div style="margin-bottom:12px"></div>
+            <div class="detail-label">Configuration</div>
+            <div class="detail-code">Kernel: C(1.0) × Matern(ν=2.5, l=1.0) + WhiteKernel
+Normalise outputs: True   Alpha: 1e-6
+Optimiser restarts: 10   Scaling: StandardScaler</div>
           </div>
         </div>
       </div>
 
       <!-- GB -->
       <div class="model-card fade d2">
-        <div class="model-indicator-bar" style="background:linear-gradient(90deg,var(--accent2),#0277BD)"></div>
+        <div class="model-indicator-bar" style="background:#808080"></div>
         <div class="model-card-body">
           <div class="model-header">
             <div class="model-name">Gradient Boosting<br>Regressor</div>
-            <span class="m3-chip chip-blue">Production model</span>
+            <span class="model-badge">Production model</span>
           </div>
-          <p class="model-summary">An ensemble of decision trees built sequentially where each tree corrects the residual errors of all previous trees. Produces the most stable and interpretable point predictions for Windsor body design comparisons.</p>
+          <p class="model-summary">Sequential ensemble of shallow decision trees. Each tree corrects the residuals of all previous trees. Most stable and interpretable point predictor for design comparison.</p>
           <div class="model-metrics">
             <div class="metric-pill">
               <div class="metric-pill-label">CV RMSE</div>
-              <div class="metric-pill-value" style="color:var(--accent2)">0.01624</div>
-              <div class="m3-progress"><div class="m3-progress-fill" style="width:65%;background:var(--accent2)"></div></div>
+              <div class="metric-pill-value">0.01624</div>
+              <div class="m3-progress"><div class="m3-progress-fill" style="width:48%"></div></div>
             </div>
             <div class="metric-pill">
               <div class="metric-pill-label">Train R²</div>
-              <div class="metric-pill-value" style="color:var(--accent2)">0.990</div>
+              <div class="metric-pill-value">0.990</div>
             </div>
             <div class="metric-pill">
               <div class="metric-pill-label">Trees</div>
-              <div class="metric-pill-value" style="color:var(--accent2)">100</div>
+              <div class="metric-pill-value">100</div>
             </div>
           </div>
           <button class="expand-btn" onclick="toggleDetail('gb-detail',this)">
-            <span>See full explanation</span>
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5l4 4 4-4"/></svg>
+            <span>Full details</span>
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5l4 4 4-4"/></svg>
           </button>
           <div class="model-detail" id="gb-detail">
-            <div class="detail-label">Why this model was chosen</div>
-            <div class="detail-text">Gradient Boosting builds its ensemble by training trees sequentially, with each tree fitting the residuals of all previous trees. A learning rate of 0.05 forces many small correction steps rather than large ones, preventing overfitting across the 355-sample WindsorML dataset. Shallow trees with maximum depth of 3 capture dominant nonlinear relationships in the Windsor geometry space, such as the drag sensitivity to rear fastback ratio in the 0.30 to 0.45 range, without memorising noise. Gradient Boosting is the recommended model when a single definitive Cd estimate is needed for a design review, a management presentation, or a ranked comparison of Windsor body variants, because it produces consistent, deterministic predictions with no stochastic component.</div>
-            <div class="detail-label">Sample size requirements</div>
-            <span class="sample-chip sc-current">355 samples (WindsorML) — strong performance</span>
-            <span class="sample-chip sc-needed">500+ (DrivAerML) — further accuracy improvement</span>
-            <span class="sample-chip sc-needed">1000+ — approaching MLP performance ceiling</span>
-            <div style="margin-bottom:14px"></div>
-            <div class="detail-label">Technical configuration</div>
-            <div class="detail-code">n_estimators: 100  learning_rate: 0.05
-max_depth: 3  subsample: 0.8
-Loss: squared error  No input scaling required</div>
-            <div class="detail-label">Accuracy on WindsorML</div>
-            <div class="detail-text">On 355 WindsorML samples, Gradient Boosting achieves CV RMSE of 0.01624. This sits in the acceptable for early-stage ranking band, not quite reaching engineering grade. Sequential residual correction gives it a clear advantage over Random Forest at this sample count. The GP outperforms it by 42% in RMSE, primarily because the GP is operating in its optimal sample-size regime. At 1000 samples, Gradient Boosting is expected to close that gap significantly.</div>
+            <div class="detail-label">Why this model</div>
+            <div class="detail-text">Gradient Boosting trains trees sequentially, with each tree fitting the residuals of all previous ones. A learning rate of 0.05 forces many small correction steps, preventing overfitting. Shallow trees (max depth 3) capture dominant nonlinear relationships without memorising noise. The recommended model for a single definitive Cd estimate in a design review — consistent and deterministic.</div>
+            <div class="detail-label">Sample size context</div>
+            <span class="sample-chip sc-current">355 samples — strong performance</span>
+            <span class="sample-chip sc-needed">500+ — further accuracy improvement</span>
+            <div style="margin-bottom:12px"></div>
+            <div class="detail-label">Configuration</div>
+            <div class="detail-code">n_estimators: 100   learning_rate: 0.05
+max_depth: 3   subsample: 0.8
+Loss: squared error</div>
           </div>
         </div>
       </div>
 
       <!-- RF -->
       <div class="model-card fade d3">
-        <div class="model-indicator-bar" style="background:linear-gradient(90deg,var(--amber),#EF6C00)"></div>
+        <div class="model-indicator-bar" style="background:#505050"></div>
         <div class="model-card-body">
           <div class="model-header">
             <div class="model-name">Random Forest<br>Regressor</div>
-            <span class="m3-chip chip-amber">Feature analysis</span>
+            <span class="model-badge">Feature analysis</span>
           </div>
-          <p class="model-summary">An ensemble of 200 independently grown decision trees that predicts by averaging. Its primary value in this suite is the built-in Gini feature importance scores that directly rank which Windsor body parameters most influence Cd.</p>
+          <p class="model-summary">200 independently grown decision trees averaged to reduce variance. Primary value here is built-in Gini feature importance — directly ranking which Windsor parameters most influence Cd.</p>
           <div class="model-metrics">
             <div class="metric-pill">
               <div class="metric-pill-label">CV RMSE</div>
-              <div class="metric-pill-value" style="color:var(--amber)">0.01418</div>
-              <div class="m3-progress"><div class="m3-progress-fill" style="width:56%;background:var(--amber)"></div></div>
+              <div class="metric-pill-value">0.01418</div>
+              <div class="m3-progress"><div class="m3-progress-fill" style="width:55%"></div></div>
             </div>
             <div class="metric-pill">
               <div class="metric-pill-label">Train R²</div>
-              <div class="metric-pill-value" style="color:var(--amber)">0.938</div>
+              <div class="metric-pill-value">0.985</div>
             </div>
             <div class="metric-pill">
               <div class="metric-pill-label">Trees</div>
-              <div class="metric-pill-value" style="color:var(--amber)">200</div>
+              <div class="metric-pill-value">200</div>
             </div>
           </div>
           <button class="expand-btn" onclick="toggleDetail('rf-detail',this)">
-            <span>See full explanation</span>
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5l4 4 4-4"/></svg>
+            <span>Full details</span>
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5l4 4 4-4"/></svg>
           </button>
           <div class="model-detail" id="rf-detail">
-            <div class="detail-label">Why this model was chosen</div>
-            <div class="detail-text">The Random Forest's most important contribution is not drag prediction accuracy but the Gini-based feature importance scores it generates as a byproduct of training. On the 355-sample WindsorML dataset, these scores show that rear fastback ratio (rlbf) accounts for 34.9% of total Cd variation, nose to windshield height ratio (rhnw) accounts for 19.8%, and fastback height ratio (rhfb) accounts for 17.8%. This means that when planning the next batch of Windsor simulations, the priority order for parameter variation is clear: concentrate new runs at varying rlbf first, then rhnw, then rhfb. Side taper, ground clearance, bottom taper angle, and frontal area together account for under 30% and need only moderate coverage in a follow-on design of experiments.</div>
-            <div class="detail-label">Sample size requirements</div>
-            <span class="sample-chip sc-current">355 samples (WindsorML) — importance rankings stable</span>
-            <span class="sample-chip sc-needed">500+ — prediction accuracy improves further</span>
-            <span class="sample-chip sc-needed">1000+ — full sensitivity analysis capability</span>
-            <div style="margin-bottom:14px"></div>
-            <div class="detail-label">Technical configuration</div>
-            <div class="detail-code">n_estimators: 200  min_samples_leaf: 2
-max_features: sqrt(n_features)  bootstrap: True
-Primary use: feature importance reporting and experiment planning</div>
-            <div class="detail-label">Accuracy on WindsorML</div>
-            <div class="detail-text">The Random Forest ranks third on 355 WindsorML samples with CV RMSE of 0.01418, which sits in the acceptable for early-stage ranking band. Independent tree averaging gives it slightly better accuracy than Gradient Boosting at this sample count because the 355-sample dataset has enough coverage for tree diversity to be beneficial. The GP outperforms it by 33% in RMSE. Feature importance rankings are stable at this sample count and can be trusted for experiment planning decisions.</div>
+            <div class="detail-label">Why this model</div>
+            <div class="detail-text">Random Forest averages 200 independently trained trees to reduce variance. Its primary role in this suite is feature importance: Gini impurity scores directly rank which Windsor parameters drive drag most. Rear Fastback Ratio dominates at 34.9%, followed by Nose/WS Height (19.8%) and Fastback Height (17.8%). These rankings guide where to focus aerodynamic design efforts.</div>
+            <div class="detail-label">Configuration</div>
+            <div class="detail-code">n_estimators: 200   max_features: sqrt
+min_samples_leaf: 2   max_depth: None</div>
           </div>
         </div>
       </div>
 
-      <!-- NN -->
+      <!-- MLP -->
       <div class="model-card fade d4">
-        <div class="model-indicator-bar" style="background:linear-gradient(90deg,#CE93D8,#7B1FA2)"></div>
+        <div class="model-indicator-bar" style="background:#383838"></div>
         <div class="model-card-body">
           <div class="model-header">
-            <div class="model-name">Neural Network<br>sklearn MLPRegressor</div>
-            <span class="m3-chip chip-purple">MLP · 3-layer</span>
+            <div class="model-name">Neural Network<br>(MLP)</div>
+            <span class="model-badge">Scale benchmark</span>
           </div>
-          <p class="model-summary">A feedforward network with three hidden layers (128 to 64 to 32 neurons, sklearn MLPRegressor) with ReLU activations, trained on 355 WindsorML samples. Note: earlier benchmark results (run on the 50-sample synthetic dataset) showed R² = −13.6; the figures above reflect the 355-sample WindsorML training. Learns smooth continuous functions across all 7 Windsor geometry parameters simultaneously.</p>
+          <p class="model-summary">Feedforward network with three hidden layers (128→64→32 neurons, ReLU). Competitive at 355 samples but expected to surpass GP at 500+ samples where its capacity advantage activates.</p>
           <div class="model-metrics">
             <div class="metric-pill">
-              <div class="metric-pill-label">Architecture</div>
-              <div class="metric-pill-value" style="color:#CE93D8;font-size:13px">128·64·32</div>
-            </div>
-            <div class="metric-pill">
               <div class="metric-pill-label">CV RMSE</div>
-              <div class="metric-pill-value" style="color:#CE93D8">0.01850</div>
+              <div class="metric-pill-value">0.01850</div>
+              <div class="m3-progress"><div class="m3-progress-fill" style="width:42%"></div></div>
             </div>
             <div class="metric-pill">
-              <div class="metric-pill-label">Status</div>
-              <div class="metric-pill-value" style="color:var(--green);font-size:12px">Windsor active</div>
+              <div class="metric-pill-label">CV R²</div>
+              <div class="metric-pill-value">0.71</div>
+            </div>
+            <div class="metric-pill">
+              <div class="metric-pill-label">Layers</div>
+              <div class="metric-pill-value">3</div>
             </div>
           </div>
           <button class="expand-btn" onclick="toggleDetail('nn-detail',this)">
-            <span>See full explanation</span>
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5l4 4 4-4"/></svg>
+            <span>Full details</span>
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5l4 4 4-4"/></svg>
           </button>
           <div class="model-detail" id="nn-detail">
             <div class="detail-label">Why this model</div>
-            <div class="detail-text">The sklearn MLPRegressor (Input 6 to 128 to 64 to 32 to Output 1) is now trained on the full 355-sample WindsorML dataset, which brings it into a functional operating regime. Unlike tree-based models, the MLP learns a continuous global function across all 7 Windsor geometry parameters simultaneously. This allows it to capture smooth interaction effects between parameters, for example the combined influence of rear fastback ratio and fastback height ratio on trailing edge separation, which tree-based models can only approximate through axis-aligned step boundaries. Early stopping with a patience of 30 epochs prevents overfitting without manual regularisation tuning. With 11,040 trainable weights across its three hidden layers, the MLP has approximately 32 weights per training sample at 355 samples, which is adequate but not ideal. Performance will improve meaningfully with DrivAerML at 500 samples.</div>
-            <div class="detail-label">Sample size requirements</div>
-            <span class="sample-chip sc-current">355 samples (WindsorML) — functional range</span>
-            <span class="sample-chip sc-needed">500 (DrivAerML) — improved generalisation</span>
-            <span class="sample-chip sc-needed">1000+ — deep architecture becomes optimal</span>
-            <div style="margin-bottom:14px"></div>
-            <div class="detail-label">Technical configuration</div>
-            <div class="detail-code">Library: sklearn.neural_network.MLPRegressor
-Layers: Input(7) -> Dense(128, ReLU) -> Dense(64, ReLU) -> Dense(32, ReLU) -> Output(1)
-Solver: Adam  lr_init: 0.001  alpha (L2): 0.001
-Early stopping: True  Val fraction: 0.2  Patience: 30
-Input scaling: StandardScaler (zero mean, unit variance) required</div>
-            <div class="detail-label">Accuracy on WindsorML</div>
-            <div class="detail-text">With 355 WindsorML samples, the MLP achieves CV RMSE of approximately 0.0185 and R squared of 0.71. It now outperforms Gradient Boosting in R squared and is competitive with Random Forest in RMSE. The GP retains a clear advantage due to its Bayesian kernel formulation being better suited to smooth aerodynamic surfaces at this sample count. The MLP no longer shows the negative R squared that characterised the underpowered 50-sample phase. At 500 samples it is projected to reach RMSE near 0.012, approaching the GP.</div>
+            <div class="detail-text">The MLP is included as a scaling benchmark. At 355 samples it is the weakest performer; the GP's Bayesian kernel formulation is better suited to smooth aerodynamic surfaces at this count. At 500+ DrivAerML samples the MLP is projected to reach RMSE near 0.012, approaching the GP. At 1000+ it becomes the preferred architecture. Note: earlier runs on the 50-sample synthetic dataset showed R² = −13.6; the 0.71 figure above reflects the 355-sample WindsorML training.</div>
+            <div class="detail-label">Configuration</div>
+            <div class="detail-code">Layers: Input(7)→Dense(128,ReLU)→Dense(64,ReLU)→Dense(32,ReLU)→Output(1)
+Solver: Adam   lr: 0.001   L2: 0.001
+Early stopping: True   Val fraction: 0.2</div>
           </div>
         </div>
       </div>
@@ -1342,50 +380,59 @@ Input scaling: StandardScaler (zero mean, unit variance) required</div>
     </div>
 
     <!-- Custom Stack — full width -->
-    <div class="model-card fade d5" style="margin-top:16px">
-      <div class="model-indicator-bar" style="background:linear-gradient(90deg,var(--pink),#AD1457)"></div>
+    <div class="model-card fade d5" style="margin-top:12px">
+      <div class="model-indicator-bar" style="background:linear-gradient(90deg,#ffffff,#888888)"></div>
       <div class="model-card-body">
         <div class="model-header">
           <div class="model-name">Custom Built Model — MRV-Aero-Stack v1</div>
-          <span class="m3-chip chip-pink">Featured · Production</span>
+          <span class="model-badge badge-top">Featured · Best overall</span>
         </div>
         <div class="grid-2" style="gap:28px">
           <div>
-            <p class="model-summary">A purpose-built stacked ensemble combining five heterogeneous base learners — XGBoost, LightGBM, CatBoost, ExtraTrees and a Matern Gaussian Process — with hill-climb weight optimisation on out-of-fold predictions. Adds physics-informed feature engineering and a log-Cd target transform. Achieves 17.6% lower CV RMSE than the best single-model baseline on the WindsorML dataset.</p>
+            <p class="model-summary">A purpose-built stacked ensemble combining five heterogeneous base learners with hill-climb weight optimisation on out-of-fold predictions. Physics-informed feature engineering and log-Cd target transform. Achieves 17.6% lower CV RMSE than the best single-model baseline.</p>
             <div class="model-metrics" style="grid-template-columns:repeat(3,1fr)">
               <div class="metric-pill">
                 <div class="metric-pill-label">CV RMSE</div>
-                <div class="metric-pill-value" style="color:var(--pink)">0.00779</div>
+                <div class="metric-pill-value">0.00779</div>
               </div>
               <div class="metric-pill">
                 <div class="metric-pill-label">CV R²</div>
-                <div class="metric-pill-value" style="color:var(--pink)">0.935</div>
+                <div class="metric-pill-value">0.935</div>
               </div>
               <div class="metric-pill">
                 <div class="metric-pill-label">Architecture</div>
-                <div class="metric-pill-value" style="color:var(--pink);font-size:12px">5-model stack</div>
+                <div class="metric-pill-value" style="font-size:12px">5-model stack</div>
+              </div>
+            </div>
+            <!-- ensemble weight bars -->
+            <div class="weight-callout">
+              <div class="weight-callout-title">Hill-climb ensemble weights</div>
+              <div class="weight-bars">
+                <div class="weight-row"><span class="weight-name">GP</span><div class="weight-bar-bg"><div class="weight-bar-fill" style="width:96.9%;background:#c0c0c0"></div></div><span class="weight-pct">96.9%</span></div>
+                <div class="weight-row"><span class="weight-name">ET</span><div class="weight-bar-bg"><div class="weight-bar-fill" style="width:3.1%;background:#606060"></div></div><span class="weight-pct">3.1%</span></div>
+                <div class="weight-row"><span class="weight-name">XGB</span><div class="weight-bar-bg"><div class="weight-bar-fill" style="width:0%;background:#383838"></div></div><span class="weight-pct">0.0%</span></div>
+                <div class="weight-row"><span class="weight-name">LGB</span><div class="weight-bar-bg"><div class="weight-bar-fill" style="width:0%;background:#383838"></div></div><span class="weight-pct">0.0%</span></div>
               </div>
             </div>
           </div>
           <div>
             <button class="expand-btn" onclick="toggleDetail('nn2-detail',this)" style="margin-bottom:12px">
-              <span>See full explanation</span>
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5l4 4 4-4"/></svg>
+              <span>Full details</span>
+              <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5l4 4 4-4"/></svg>
             </button>
             <div class="model-detail" id="nn2-detail">
               <div class="detail-label">Why a stacked ensemble</div>
-              <div class="detail-text">No single model class is optimal across every region of the Windsor Cd surface. Tree ensembles capture sharp nonlinearities near critical fastback separation thresholds; the Gaussian Process captures the smooth interior of the design space with calibrated uncertainty. Stacking lets each learner contribute where it is strongest. Hill-climb weight optimisation on out-of-fold predictions finds the combination that minimises real held-out error rather than training error.</div>
-              <div class="detail-label">Technical configuration</div>
-              <div class="detail-code">Base learners (5): XGBoost, LightGBM, CatBoost, ExtraTrees, GP (Matern v=2.5 + WhiteKernel)
-Feature engineering: pairwise products, x^2, log(x), sqrt(x), dynamic-pressure q = 0.5*rho*V^2
-Target transform: log(Cd) stabilises variance across the Windsor Cd range
-Out-of-fold: 5-fold CV, 3-seed bagging per base learner
-Meta-combiner: hill-climb vs positive-Ridge, winner picked by inner CV
-Uncertainty: cross-model std (epistemic) + GP predictive sigma (calibrated)</div>
-              <div class="detail-label">How it compares on WindsorML</div>
-              <div class="detail-text">On the 355-sample WindsorML dataset, the CV ranking is: Custom Stack 0.00779, GP 0.00946, RF 0.01418, GB 0.01624, MLP 0.01850. The Custom Stack beats the best single baseline by 17.6% in RMSE and 13.3% in MAE. The hill-climb weights concentrate on GP and ExtraTrees at this sample count. At 500 or more DrivAerML samples, the weights will shift toward XGBoost and LightGBM because gradient-boosted trees scale better than GP past approximately 300 to 400 points.</div>
-              <div class="detail-label">Ensemble weight transparency</div>
-              <div class="detail-text" style="background:rgba(255,213,79,0.06);border:1px solid rgba(255,213,79,0.18);border-radius:10px;padding:12px 14px;">The hill-climb optimiser assigned weights: <strong style="color:var(--accent);font-family:var(--font-mono)">GP 0.969 · ExtraTrees 0.031 · XGB/LGB/CatBoost 0.000</strong>. At 355 samples the stack is effectively GP-dominant — the XGBoost, LightGBM and CatBoost learners receive zero weight because the GP dominates at this sample size. The stacking architecture is designed to adapt: as the dataset grows toward 1000+ samples these weights will redistribute toward the gradient-boosted trees.</div>
+              <div class="detail-text">No single model is optimal across every region of the Windsor Cd surface. Tree ensembles capture sharp nonlinearities near critical fastback separation thresholds; the GP captures the smooth interior with calibrated uncertainty. Stacking lets each learner contribute where strongest.</div>
+              <div class="detail-label">Weight transparency</div>
+              <div class="detail-text">At 355 samples the stack is GP-dominant (96.9%). XGB, LGB and CatBoost receive zero weight because GP dominates at this sample count. As the dataset grows toward 1000+ samples, weights will redistribute toward gradient-boosted trees.</div>
+              <div class="detail-label">Configuration</div>
+              <div class="detail-code">Base learners: XGBoost, LightGBM, CatBoost, ExtraTrees, GP(Matern ν=2.5)
+Feature engineering: pairwise products, x², log(x), √x, dynamic pressure q
+Target transform: log(Cd) — stabilises variance
+Out-of-fold: 5-fold CV, 5-seed bagging per base learner
+Meta-combiner: hill-climb vs positive-Ridge, winner by inner CV</div>
+              <div class="detail-label">Results on WindsorML</div>
+              <div class="detail-text">CV ranking: Custom 0.00779, GP 0.00946, RF 0.01418, GB 0.01624, MLP 0.01850. Custom stack beats the best single baseline by 17.6% in RMSE and 13.3% in MAE.</div>
             </div>
           </div>
         </div>
@@ -1394,36 +441,36 @@ Uncertainty: cross-model std (epistemic) + GP predictive sigma (calibrated)</div
   </div>
 </div>
 
-<!-- ══ PAGE: CALCULATOR ══ -->
+<!-- ══ CALCULATOR ══ -->
 <div class="page" id="page-calculator">
   <div class="page-header">
-    <div class="page-eyebrow">WindsorML Calculator · Real-time Prediction</div>
-    <div class="page-title">Live Drag Coefficient<br>Predictor — Windsor Body</div>
-    <div class="page-desc">Select a model or compare all five simultaneously. Adjust any Windsor body geometry parameter and predictions update in real time. All models are trained on 355 WindsorML Wall-Modelled LES simulations.</div>
-    <div style="margin-top:12px;display:inline-flex;align-items:center;gap:8px;background:rgba(255,213,79,0.10);border:1px solid rgba(255,213,79,0.25);border-radius:50px;padding:6px 14px;font-size:12px;color:var(--amber);font-weight:500;">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-      Approximate predictor — JS surrogate uses simplified coefficients fitted to the 355 WindsorML samples, not the serialised Python models
+    <div class="page-eyebrow">Calculator · Real-time Prediction</div>
+    <div class="page-title">Live Drag Coefficient<br><em>Predictor — Windsor Body</em></div>
+    <div class="page-desc">Adjust Windsor body geometry parameters. All five model predictions update instantly. Trained on 355 WindsorML Wall-Modelled LES simulations.</div>
+    <div style="margin-top:14px;display:inline-flex;align-items:center;gap:8px;border:1px solid #303030;border-radius:50px;padding:5px 14px;font-size:11px;color:#606060;font-family:'DM Mono',monospace;">
+      Approximate — JS surrogate uses simplified coefficients, not the serialised Python models
     </div>
   </div>
 
   <div class="content">
     <div class="calc-layout">
+
+      <!-- sliders panel -->
       <div class="calc-panel">
         <div class="calc-panel-head">
-          <div class="calc-panel-title">Model selection</div>
-        </div>
-        <div style="padding:16px 22px 0">
-          <div class="segmented-btn-group">
-            <button class="seg-btn active-teal" id="sel-all" onclick="setModel('all',this)">Best</button>
-            <button class="seg-btn" id="sel-gp"  onclick="setModel('gp',this)">GP</button>
-            <button class="seg-btn" id="sel-gb"  onclick="setModel('gb',this)">GB</button>
-            <button class="seg-btn" id="sel-rf"  onclick="setModel('rf',this)">RF</button>
-            <button class="seg-btn" id="sel-nn"  onclick="setModel('nn',this)">MLP</button>
-            <button class="seg-btn" id="sel-nn2" onclick="setModel('nn2',this)">Custom</button>
-          </div>
+          <div class="calc-panel-title">Geometry parameters</div>
         </div>
 
-        <div class="param-group">
+        <div class="model-tabs">
+          <button class="tab-btn active" id="sel-all" onclick="setModel('all',this)">Best</button>
+          <button class="tab-btn" id="sel-gp"  onclick="setModel('gp',this)">GP</button>
+          <button class="tab-btn" id="sel-gb"  onclick="setModel('gb',this)">GB</button>
+          <button class="tab-btn" id="sel-rf"  onclick="setModel('rf',this)">RF</button>
+          <button class="tab-btn" id="sel-nn"  onclick="setModel('nn',this)">MLP</button>
+          <button class="tab-btn" id="sel-nn2" onclick="setModel('nn2',this)">Custom</button>
+        </div>
+
+        <div class="param-group" style="margin-top:14px">
           <div class="param-group-label">Rear body geometry</div>
           <div class="param-sliders">
             <div class="slider-row">
@@ -1477,7 +524,7 @@ Uncertainty: cross-model std (epistemic) + GP predictive sigma (calibrated)</div
         </div>
       </div>
 
-      <!-- Result panel -->
+      <!-- result panel -->
       <div class="result-panel">
         <div class="cd-card" id="cd-wrap">
           <div class="cd-label">Predicted Drag Coefficient</div>
@@ -1489,61 +536,63 @@ Uncertainty: cross-model std (epistemic) + GP predictive sigma (calibrated)</div
         <div class="pred-list">
           <div class="pred-list-head">All model predictions</div>
           <div class="pred-item" id="row-gp">
-            <span class="pred-item-label"><span class="pred-dot" style="background:var(--green)"></span>Gaussian Process</span>
+            <span class="pred-item-label"><span class="pred-dot" style="background:#c0c0c0"></span>Gaussian Process</span>
             <span class="pred-val" id="pred-gp">—</span>
           </div>
           <div class="pred-item" id="row-gb">
-            <span class="pred-item-label"><span class="pred-dot" style="background:var(--accent2)"></span>Gradient Boosting</span>
+            <span class="pred-item-label"><span class="pred-dot" style="background:#808080"></span>Gradient Boosting</span>
             <span class="pred-val" id="pred-gb">—</span>
           </div>
           <div class="pred-item" id="row-rf">
-            <span class="pred-item-label"><span class="pred-dot" style="background:var(--amber)"></span>Random Forest</span>
+            <span class="pred-item-label"><span class="pred-dot" style="background:#505050"></span>Random Forest</span>
             <span class="pred-val" id="pred-rf">—</span>
           </div>
           <div class="pred-item" id="row-nn">
-            <span class="pred-item-label"><span class="pred-dot" style="background:#CE93D8"></span>Neural Network (MLP)</span>
+            <span class="pred-item-label"><span class="pred-dot" style="background:#383838"></span>Neural Network (MLP)</span>
             <span class="pred-val" id="pred-nn">—</span>
           </div>
           <div class="pred-item" id="row-nn2">
-            <span class="pred-item-label"><span class="pred-dot" style="background:var(--pink)"></span>Custom Built Model</span>
+            <span class="pred-item-label"><span class="pred-dot" style="background:#e0e0e0"></span>Custom Built Model</span>
             <span class="pred-val" id="pred-nn2">—</span>
           </div>
         </div>
 
-        <button onclick="shareCalcState()" style="width:100%;padding:12px;background:var(--bg4);border:1px solid var(--border);border-radius:var(--shape-lg);color:var(--text2);font-family:var(--font-body);font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-          <span id="share-btn-text">Copy shareable link</span>
-        </button>
         <div class="unc-card">
           <div class="unc-label">GP Uncertainty (±1σ)</div>
           <div class="unc-value" id="unc-value">± —</div>
-          <div class="unc-note">High uncertainty signals an unexplored Windsor geometry region. Run a targeted WMLES simulation at these parameters to improve model accuracy.</div>
+          <div class="unc-note">High uncertainty signals an unexplored Windsor geometry region. Run a targeted WMLES simulation here to improve accuracy.</div>
         </div>
 
-        <div class="unc-card" style="border-top:2px solid var(--accent)">
+        <div class="unc-card">
           <div class="unc-label">Model consensus</div>
-          <div class="unc-value" id="consensus-value" style="color:var(--text)">—</div>
+          <div class="unc-value" id="consensus-value">—</div>
           <div class="unc-note" id="consensus-note">Agreement between GP, GB and RF predictions.</div>
         </div>
+
+        <button class="share-btn" onclick="shareCalcState()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+          <span id="share-btn-text">Copy shareable link</span>
+        </button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ══ PAGE: ANALYSIS ══ -->
+<!-- ══ ANALYSIS ══ -->
 <div class="page" id="page-analysis">
   <div class="page-header">
     <div class="page-eyebrow">Analysis · Sensitivity</div>
-    <div class="page-title">Parameter Sensitivity<br>&amp; Feature Analysis</div>
-    <div class="page-desc">Which Windsor body geometry parameters drive drag most? How does Cd respond as each parameter varies across the WindsorML training range? Results are based on 355 high-fidelity WMLES simulations.</div>
+    <div class="page-title">Parameter Sensitivity<br><em>&amp; Feature Analysis</em></div>
+    <div class="page-desc">Which Windsor body parameters drive drag most? How does Cd respond as each parameter sweeps its full range? Based on 355 high-fidelity WMLES simulations.</div>
   </div>
 
   <div class="content">
-    <div class="grid-2" style="margin-bottom:24px">
-      <div class="m3-card">
+    <div class="grid-2" style="margin-bottom:20px">
+
+      <div class="card">
         <div class="card-header">
           <div class="card-title">Feature Importance — Random Forest</div>
-          <div class="card-sub">Gini impurity-based importance. Values sum to 1.0. Based on 355 WindsorML samples.</div>
+          <div class="card-sub">Gini impurity ranking. Values sum to 1.0.</div>
         </div>
         <div class="card-body">
           <table class="fi-table">
@@ -1553,62 +602,65 @@ Uncertainty: cross-model std (epistemic) + GP predictive sigma (calibrated)</div
         </div>
       </div>
 
-      <div class="m3-card">
+      <div class="card">
         <div class="card-header">
           <div class="card-title">Parameter Sweep</div>
-          <div class="card-sub">Cd response as one Windsor geometry parameter varies — others held at current slider values</div>
+          <div class="card-sub">Cd response as one parameter varies — others held at current calculator values. Grey band = GP ±1σ uncertainty.</div>
         </div>
         <div class="card-body">
           <div class="filter-chips" id="sweep-tabs"></div>
-          <div class="chart-wrap" style="height:240px"><canvas id="sweep-chart"></canvas></div>
+          <div class="chart-wrap" style="height:230px"><canvas id="sweep-chart"></canvas></div>
+          <div class="chart-caption">Hover to compare all models at a given parameter value. The grey band shows where the GP is uncertain — ideal locations for new CFD runs.</div>
         </div>
       </div>
+
     </div>
 
-    <div class="m3-card">
+    <div class="card">
       <div class="card-header">
-        <div class="card-title">Actual vs Predicted — All Models on 355 WindsorML Samples</div>
-        <div class="card-sub">Out-of-fold 5-fold CV predictions. The Custom Built Model sits tightest to the perfect prediction diagonal.</div>
+        <div class="card-title">Actual vs Predicted — All Models</div>
+        <div class="card-sub">Out-of-fold 5-fold CV on 355 WindsorML samples. Points on the diagonal = perfect prediction. Hover any point for details.</div>
       </div>
       <div class="card-body">
-        <div class="chart-wrap" style="height:300px"><canvas id="avp-full-chart"></canvas></div>
+        <div class="chart-wrap" style="height:320px"><canvas id="avp-full-chart"></canvas></div>
+        <div class="chart-caption">White circles (Custom Stack) cluster tightest to the diagonal. Shape encodes model: circle=Custom, square=GP, triangle=GB, diamond=RF.</div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ══ PAGE: DATASET ══ -->
+<!-- ══ DATASET ══ -->
 <div class="page" id="page-dataset">
   <div class="page-header">
     <div class="page-eyebrow">Dataset · Roadmap</div>
-    <div class="page-title">WindsorML Training Data &amp;<br>Dataset Upgrade Path</div>
-    <div class="page-desc">Model accuracy scales directly with data quality and quantity. This section documents the WindsorML dataset now active across all five surrogate models, along with the upgrade roadmap to DrivAerML.</div>
+    <div class="page-title">WindsorML Training Data<br><em>&amp; Upgrade Path</em></div>
+    <div class="page-desc">Model accuracy scales with data quality and quantity. This section documents the WindsorML dataset active across all five models, and the upgrade roadmap to DrivAerML.</div>
   </div>
 
   <div class="content">
     <div class="dataset-grid fade">
       <div class="ds-card">
         <div class="ds-card-head">
-          <div class="ds-status" style="color:var(--red)">Retired — superseded</div>
-          <div class="ds-name">Synthetic CFD Dataset</div>
+          <div class="ds-status" style="color:#505050">Retired — superseded</div>
+          <div class="ds-name">Synthetic CFD</div>
         </div>
         <div class="ds-body">
-          <p class="ds-desc">Physics-consistent synthetic aerodynamic data used to bootstrap the surrogate pipeline during early development. Superseded by WindsorML high-fidelity CFD data. No longer used for any model training.</p>
+          <p class="ds-desc">Physics-consistent synthetic data used to bootstrap the surrogate pipeline during early development. Superseded by WindsorML. No longer used for any model training.</p>
           <div class="ds-tags">
             <span class="ds-tag">50 samples</span>
             <span class="ds-tag">6 inputs</span>
-            <span class="ds-tag">Cd output</span>
             <span class="ds-tag">Retired</span>
           </div>
         </div>
       </div>
+
       <div class="ds-card">
         <div class="ds-card-head">
-          <div class="ds-status" style="color:var(--green)">Current — active training data</div>
+          <div class="ds-status" style="color:#a0a0a0">Current — active training data</div>
           <div class="ds-name">WindsorML</div>
         </div>
         <div class="ds-body">
-          <p class="ds-desc">355 high-fidelity Wall-Modelled LES simulations on the Windsor body. Available on HuggingFace under CC-BY-SA. All five surrogate models are trained and cross-validated on this dataset using the 7 dimensionless geometry parameters.</p>
+          <p class="ds-desc">355 high-fidelity Wall-Modelled LES simulations on the Windsor body. Available on HuggingFace under CC-BY-SA. All five models are cross-validated on this dataset using 7 dimensionless geometry parameters.</p>
           <div class="ds-tags">
             <span class="ds-tag active">355 samples</span>
             <span class="ds-tag active">7 parameters</span>
@@ -1617,13 +669,14 @@ Uncertainty: cross-model std (epistemic) + GP predictive sigma (calibrated)</div
           </div>
         </div>
       </div>
+
       <div class="ds-card">
         <div class="ds-card-head">
-          <div class="ds-status" style="color:var(--text3)">Future — access pending</div>
+          <div class="ds-status" style="color:#505050">Future — access pending</div>
           <div class="ds-name">DrivAerML</div>
         </div>
         <div class="ds-body">
-          <p class="ds-desc">500 morphed DrivAer notchback variants. A realistic production car geometry used by major OEMs for aerodynamic research. Industrial-grade scale-resolving CFD with the best geometric match to real sedan bodies.</p>
+          <p class="ds-desc">500 morphed DrivAer notchback variants. A realistic production car geometry used by major OEMs. Industrial-grade scale-resolving CFD with the best geometric match to real sedan bodies.</p>
           <div class="ds-tags">
             <span class="ds-tag">500 samples</span>
             <span class="ds-tag">Real car body</span>
@@ -1636,7 +689,7 @@ Uncertainty: cross-model std (epistemic) + GP predictive sigma (calibrated)</div
 
     <div class="info-box fade d1">
       <div class="info-box-title">Why this approach reduces CFD simulation count</div>
-      Traditional aerodynamic design requires running a CFD simulation for every design variant, a process that takes 6 to 48 hours per run on a high-performance cluster. The surrogate model approach breaks this barrier. The 355 WindsorML high-fidelity WMLES runs train a mathematical model that approximates the full CFD solver. Once trained, the surrogate predicts Cd in under one millisecond for any Windsor parameter combination, enabling rapid screening of thousands of design variants. The Gaussian Process additionally provides uncertainty estimates enabling active learning, where the next CFD simulation is always placed at the point of highest model uncertainty. This Bayesian optimisation strategy can reduce the simulation count required to find an optimal design by five to ten times compared to random or grid sampling.
+      Traditional aerodynamic design requires running a CFD simulation for every design variant — 6 to 48 hours per run on a high-performance cluster. The surrogate model approach breaks this barrier. The 355 WindsorML WMLES runs train a mathematical model that approximates the full CFD solver. Once trained, the surrogate predicts Cd in under one millisecond for any Windsor parameter combination, enabling rapid screening of thousands of design variants. The Gaussian Process additionally provides uncertainty estimates enabling active learning — the next CFD simulation is always placed at the point of highest model uncertainty. This Bayesian optimisation strategy can reduce the simulation count required to find an optimal design by five to ten times compared to random or grid sampling.
     </div>
 
     <div class="section-head">
@@ -1647,15 +700,15 @@ Uncertainty: cross-model std (epistemic) + GP predictive sigma (calibrated)</div
     <div class="param-def-grid fade d2">
       <div class="param-def-item">
         <div class="param-def-name">ratio_length_back_fast (rlbf)</div>
-        <div class="param-def-text">Dimensionless ratio of the rear fastback length to the total body length. Lower values produce a steeper, more abrupt rear end with earlier separation. Higher values create a longer, more gradual taper with delayed separation.</div>
+        <div class="param-def-text">Ratio of rear fastback length to total body length. Lower values = steeper rear end with earlier separation. Higher values = longer gradual taper with delayed separation.</div>
       </div>
       <div class="param-def-item">
         <div class="param-def-name">ratio_height_nose_windshield (rhnw)</div>
-        <div class="param-def-text">Height ratio between the nose leading edge and the windshield base. Controls how bluff the front face appears to the oncoming flow and how aggressively the streamlines transition to the windshield plane.</div>
+        <div class="param-def-text">Height ratio between the nose leading edge and windshield base. Controls how bluff the front face appears to oncoming flow and how aggressively streamlines transition to the windshield plane.</div>
       </div>
       <div class="param-def-item">
         <div class="param-def-name">ratio_height_fast_back (rhfb)</div>
-        <div class="param-def-text">Height ratio of the fastback surface relative to the overall body height. Governs the severity of the rear slope angle and the onset of trailing-edge separation from the roof surface.</div>
+        <div class="param-def-text">Height ratio of the fastback surface relative to overall body height. Governs the severity of rear slope angle and the onset of trailing-edge separation from the roof surface.</div>
       </div>
       <div class="param-def-item">
         <div class="param-def-name">side_taper</div>
@@ -1663,21 +716,21 @@ Uncertainty: cross-model std (epistemic) + GP predictive sigma (calibrated)</div
       </div>
       <div class="param-def-item">
         <div class="param-def-name">clearance</div>
-        <div class="param-def-text">Ground clearance in millimetres between the lowest body surface and the ground plane. Affects underbody flow velocity and the balance between base pressure recovery and underbody suction force.</div>
+        <div class="param-def-text">Ground clearance in millimetres. Affects underbody flow velocity and the balance between base pressure recovery and underbody suction force.</div>
       </div>
       <div class="param-def-item">
         <div class="param-def-name">bottom_taper_angle</div>
-        <div class="param-def-text">Angle of the underbody diffuser ramp in degrees. Higher angles increase underbody pressure recovery but risk diffuser stall and flow separation above approximately 12 degrees, which reverses the drag benefit.</div>
+        <div class="param-def-text">Underbody diffuser ramp angle in degrees. Higher angles increase pressure recovery but risk diffuser stall above approximately 12 degrees, which reverses the drag benefit.</div>
       </div>
       <div class="param-def-item" style="grid-column:1/-1">
-        <div class="param-def-name">frontal_area</div>
-        <div class="param-def-text">Projected frontal area in square metres at Windsor body scale. Directly scales the pressure drag component: Cd = Fd divided by (0.5 times rho times V squared times A). Windsor body values range from approximately 0.080 to 0.120 m squared.</div>
+        <div class="param-def-name">frontal_area (m²)</div>
+        <div class="param-def-text">Projected frontal area at Windsor body scale. Directly scales the pressure drag component: Cd = Fd / (0.5 × ρ × V² × A). Windsor body values range from approximately 0.080 to 0.120 m².</div>
       </div>
     </div>
 
     <div class="section-head">
       <div class="section-title">WindsorML Training Data — First 15 Samples</div>
-      <div class="section-sub">Wall-Modelled LES Cd values. Parameters are dimensionless Windsor body geometry ratios as defined in the WindsorML dataset specification.</div>
+      <div class="section-sub">Wall-Modelled LES Cd values. Parameters are dimensionless Windsor body geometry ratios.</div>
     </div>
 
     <div class="data-table-wrap fade d3">
@@ -1699,438 +752,7 @@ Uncertainty: cross-model std (epistemic) + GP predictive sigma (calibrated)</div
 </div>
 
 </main>
-<script>
-/* ── STANDARDISE ── */
-const means = Array(7).fill(0), stds = Array(7).fill(1);
-for(let j=0;j<7;j++){
-  const col=DATA.map(r=>r[j]);
-  means[j]=col.reduce((a,b)=>a+b)/col.length;
-  const v=col.reduce((a,b)=>a+(b-means[j])**2,0)/col.length;
-  stds[j]=Math.sqrt(v)||1;
-}
-const Xs=DATA.map(r=>r.slice(0,7).map((v,j)=>(v-means[j])/stds[j]));
-const ys=DATA.map(r=>r[7]);
-function scale(r){return r.slice(0,7).map((v,j)=>(v-means[j])/stds[j]);}
 
-/* ── MODEL IMPLEMENTATIONS ── */
-function gbPred(inp){
-  const [rlbf,rhnw,rhfb,st,cl,bta,fa]=inp;
-  let cd=0.320;
-  cd+=0.060*(0.35-rlbf);
-  cd+=0.080*(rhnw-0.50);
-  cd+=0.060*(rhfb-0.55);
-  cd-=0.0025*st;
-  cd+=0.0003*(cl-40)*(cl-40)/100;
-  cd-=0.0035*bta;
-  cd+=1.2*(fa-0.10);
-  return Math.max(0.240,Math.min(0.420,cd));
-}
-
-function rbf(a,b,l=1.5){return Math.exp(-0.5*a.reduce((s,v,i)=>s+(v-b[i])**2,0)/(l*l));}
-function gpPred(inp){
-  const xs=scale(inp),n=Xs.length;
-  const k=Xs.map(xi=>rbf(xs,xi));
-  const ym=ys.reduce((a,b)=>a+b)/n;
-  const ks=k.reduce((a,b)=>a+b)||1;
-  const mu=k.reduce((s,ki,i)=>s+ki*(ys[i]-ym),0)/ks+ym;
-  const std=0.012*(1-Math.max(...k));
-  return {mean:mu,std};
-}
-
-function rfPred(inp){
-  const xs=scale(inp);
-  const ds=Xs.map((xi,i)=>({d:xi.reduce((s,v,j)=>s+(v-xs[j])**2,0),y:ys[i]}));
-  ds.sort((a,b)=>a.d-b.d);
-  const top=ds.slice(0,9),ws=top.reduce((s,p)=>s+1/(p.d+1e-9),0);
-  return top.reduce((s,p)=>s+p.y/(p.d+1e-9),0)/ws;
-}
-
-function nnPred(inp){
-  const gb=gbPred(inp),rf=rfPred(inp);
-  return gb*0.52+rf*0.48+0.003;
-}
-
-function nn2Pred(inp){
-  const gp=gpPred(inp).mean,rf=rfPred(inp);
-  return gp*0.969+rf*0.031;
-}
-
-/* ── NAV ── */
-function showPage(id,el){ closeNav();
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(l=>l.classList.remove('active'));
-  document.getElementById('page-'+id).classList.add('active');
-  if(el) el.classList.add('active');
-  if(id==='overview') initOverviewCharts();
-  if(id==='analysis') initAnalysisCharts();
-  if(id==='dataset')  {buildDataTable();buildParamDefs();}
-}
-
-/* ── MODEL SELECTOR ── */
-let activeModel='all';
-function setModel(m,btn){
-  activeModel=m;
-  document.querySelectorAll('.seg-btn').forEach(b=>b.className='seg-btn');
-  const cls={all:'active-teal',gp:'active-green',gb:'active-blue',rf:'active-amber',nn:'active-purple',nn2:'active-pink'};
-  btn.className='seg-btn '+(cls[m]||'active-teal');
-  const names={all:'Average of all models',gp:'Gaussian Process',gb:'Gradient Boosting',rf:'Random Forest',nn:'Neural Network (MLP)',nn2:'Custom Built Model (MRV-Aero-Stack v1)'};
-  document.getElementById('model-indicator').textContent=names[m]||'';
-  ['gp','gb','rf','nn','nn2'].forEach(r=>{
-    const row=document.getElementById('row-'+r);
-    row.classList.toggle('pred-active',m==='all'||m===r);
-  });
-  updateCalc();
-}
-
-/* ── SLIDERS ── */
-function setupSliders(){
-  [
-    ['s-rlbf','v-rlbf',v=>`${(+v).toFixed(3)}`],
-    ['s-rhnw','v-rhnw',v=>`${(+v).toFixed(3)}`],
-    ['s-rhfb','v-rhfb',v=>`${(+v).toFixed(3)}`],
-    ['s-sidetaper','v-sidetaper',v=>`${(+v).toFixed(1)}°`],
-    ['s-clearance','v-clearance',v=>`${v} mm`],
-    ['s-bottomtaper','v-bottomtaper',v=>`${(+v).toFixed(1)}°`],
-    ['s-frontalarea','v-frontalarea',v=>`${(+v).toFixed(4)} m²`],
-  ].forEach(([sid,vid,fmt])=>{
-    const s=document.getElementById(sid); if(!s)return;
-    const v=document.getElementById(vid); if(v)v.textContent=fmt(s.value);
-    s.addEventListener('input',()=>{
-      if(v)v.textContent=fmt(s.value);
-      updateCalc();
-      if(document.getElementById('page-analysis').classList.contains('active'))drawSweep();
-    });
-  });
-}
-
-function getInp(){
-  return [
-    +document.getElementById('s-rlbf').value,
-    +document.getElementById('s-rhnw').value,
-    +document.getElementById('s-rhfb').value,
-    +document.getElementById('s-sidetaper').value,
-    +document.getElementById('s-clearance').value,
-    +document.getElementById('s-bottomtaper').value,
-    +document.getElementById('s-frontalarea').value,
-  ];
-}
-
-function updateCalc(){
-  const inp=getInp();
-  const gb=gbPred(inp),gp=gpPred(inp),rf=rfPred(inp),nn=nnPred(inp),nn2=nn2Pred(inp);
-  document.getElementById('pred-gb').textContent=gb.toFixed(5);
-  document.getElementById('pred-gp').textContent=gp.mean.toFixed(5);
-  document.getElementById('pred-rf').textContent=rf.toFixed(5);
-  document.getElementById('pred-nn').textContent=nn.toFixed(5);
-  document.getElementById('pred-nn2').textContent=nn2.toFixed(5);
-  document.getElementById('unc-value').textContent=`± ${gp.std.toFixed(5)}`;
-
-  let display;
-  if(activeModel==='gp')display=gp.mean;
-  else if(activeModel==='gb')display=gb;
-  else if(activeModel==='rf')display=rf;
-  else if(activeModel==='nn')display=nn;
-  else if(activeModel==='nn2')display=nn2;
-  else display=nn2;
-
-  const cdEl=document.getElementById('cd-output');
-  const tagEl=document.getElementById('cd-tag');
-  const wrapEl=document.getElementById('cd-wrap');
-  cdEl.textContent=display.toFixed(4);
-  wrapEl.className='cd-card';
-  if(display<0.270){tagEl.textContent='Low drag';wrapEl.classList.add('cd-low');}
-  else if(display<0.310){tagEl.textContent='Medium drag';}
-  else{tagEl.textContent='High drag';wrapEl.classList.add('cd-hi');}
-
-  const spread=Math.max(Math.abs(gb-rf),Math.abs(gp.mean-rf),Math.abs(gb-gp.mean));
-  const cEl=document.getElementById('consensus-value');
-  const cnEl=document.getElementById('consensus-note');
-  if(spread<0.005){cEl.textContent='Strong agreement';cEl.style.color='var(--green)';}
-  else if(spread<0.012){cEl.textContent='Moderate agreement';cEl.style.color='var(--accent)';}
-  else{cEl.textContent='Low agreement';cEl.style.color='var(--amber)';}
-  cnEl.textContent=`GP/GB/RF spread: ± ${(spread/2).toFixed(5)} Cd`;
-}
-
-/* ── FEATURE IMPORTANCE TABLE ── */
-function buildFiTable(tbId){
-  const tb=document.getElementById(tbId); if(!tb||tb.innerHTML!=='')return;
-  FEAT_ORDER.forEach((fi,rank)=>{
-    const imp=FEAT_IMP[fi];
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td class="fi-rank">${rank+1}</td>
-      <td><span class="fi-name">${FEAT_LABELS[fi]}</span></td>
-      <td class="fi-bar-cell" style="width:45%"><div class="fi-bar-bg"><div class="fi-bar-fill" style="width:${imp*100}%"></div></div></td>
-      <td class="fi-score">${(imp*100).toFixed(1)}%</td>`;
-    tb.appendChild(tr);
-  });
-}
-
-/* ── DATA TABLE ── */
-function buildDataTable(){
-  const tb=document.getElementById('data-tbody'); if(!tb||tb.innerHTML!=='')return;
-  DATA.slice(0,15).forEach((r,i)=>{
-    const cd=r[7];
-    const cls=cd<0.265?'cd-low-c':cd>0.305?'cd-hi-c':'cd-mid-c';
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${String(i+1).padStart(2,'0')}</td>
-      <td>${r[0].toFixed(3)}</td><td>${r[1].toFixed(3)}</td><td>${r[2].toFixed(3)}</td>
-      <td>${r[3].toFixed(1)}</td><td>${r[4].toFixed(1)}</td>
-      <td>${r[5].toFixed(1)}</td><td>${r[6].toFixed(4)}</td>
-      <td class="${cls}">${cd.toFixed(5)}</td>`;
-    tb.appendChild(tr);
-  });
-}
-
-function buildParamDefs(){}
-
-/* ── M3 CHART DEFAULTS ── */
-const M3 = {
-  grid:  'rgba(90,118,98,0.15)',
-  tick:  '#5A7662',
-  tooltip: { bg:'#1C2520', border:'#2A3D30', title:'#DCE5DD', body:'#8FAF99' }
-};
-
-function m3Defaults(extra={}){
-  return {
-    responsive:true, maintainAspectRatio:false,
-    plugins:{
-      legend:{display:false},
-      tooltip:{
-        backgroundColor:M3.tooltip.bg,
-        borderColor:M3.tooltip.border,
-        borderWidth:1,
-        titleColor:M3.tooltip.title,
-        bodyColor:M3.tooltip.body,
-        padding:10,
-        cornerRadius:12,
-        ...extra.tooltip
-      }
-    },
-    scales:{
-      x:{grid:{color:M3.grid},ticks:{color:M3.tick,font:{size:10,family:"'Roboto Mono', monospace"}}},
-      y:{grid:{color:M3.grid},ticks:{color:M3.tick,font:{size:10,family:"'Roboto Mono', monospace"}}},
-      ...(extra.scales||{})
-    },
-    ...extra
-  };
-}
-
-const PERFECT_LINE_PLUGIN = (min,max)=>({
-  id:'perfLine',
-  beforeDraw(chart){
-    const{ctx,scales:{x,y}}=chart;
-    ctx.save();
-    ctx.strokeStyle='rgba(77,217,192,0.25)';
-    ctx.lineWidth=1.5;
-    ctx.setLineDash([5,5]);
-    ctx.beginPath();
-    ctx.moveTo(x.getPixelForValue(min),y.getPixelForValue(min));
-    ctx.lineTo(x.getPixelForValue(max),y.getPixelForValue(max));
-    ctx.stroke();
-    ctx.restore();
-  }
-});
-
-/* ── OVERVIEW CHARTS ── */
-let avpChartInst=null;
-function initOverviewCharts(){
-  buildFiTable('fi-tbody-ov');
-  if(avpChartInst)return;
-  const acts=DATA.map(r=>r[7]);
-  const preds=DATA.map(r=>+nn2Pred(r.slice(0,7)).toFixed(5));
-  const ctx=document.getElementById('avp-chart').getContext('2d');
-  avpChartInst=new Chart(ctx,{
-    type:'scatter',
-    data:{datasets:[{
-      label:'Custom Built Model',
-      data:acts.map((a,i)=>({x:a,y:preds[i]})),
-      backgroundColor:'rgba(244,143,177,0.7)',
-      borderColor:'rgba(244,143,177,0.3)',
-      borderWidth:1, pointRadius:5, pointHoverRadius:7,
-    }]},
-    options:{
-      ...m3Defaults({
-        tooltip:{callbacks:{label:d=>`Actual: ${d.raw.x.toFixed(4)}, Predicted: ${d.raw.y.toFixed(4)}`}},
-        scales:{
-          x:{...m3Defaults().scales.x,title:{display:true,text:'Actual Cd',color:M3.tick,font:{size:11}},min:0.24,max:0.36},
-          y:{...m3Defaults().scales.y,title:{display:true,text:'Predicted Cd',color:M3.tick,font:{size:11}},min:0.24,max:0.36},
-        }
-      })
-    },
-    plugins:[PERFECT_LINE_PLUGIN(0.24,0.36)]
-  });
-}
-
-/* ── ANALYSIS CHARTS ── */
-let avpFullChartInst=null, sweepChartInst=null, activeSweep=0;
-const SWEEPS=[
-  {label:'Rear Fastback Ratio',idx:0,min:0.20,max:0.60,step:0.02,unit:''},
-  {label:'Nose/WS Height Ratio',idx:1,min:0.30,max:0.70,step:0.02,unit:''},
-  {label:'Fastback Height Ratio',idx:2,min:0.30,max:0.80,step:0.02,unit:''},
-  {label:'Side Taper',idx:3,min:0,max:15,step:0.5,unit:'°'},
-  {label:'Ground Clearance',idx:4,min:20,max:80,step:5,unit:'mm'},
-  {label:'Bottom Taper',idx:5,min:0,max:20,step:1,unit:'°'},
-];
-
-function initAnalysisCharts(){
-  buildFiTable('fi-tbody-an');
-  buildSweepTabs();
-  drawSweep();
-  initAvpFullChart();
-}
-
-function buildSweepTabs(){
-  const cont=document.getElementById('sweep-tabs');
-  if(cont.innerHTML!=='')return;
-  SWEEPS.forEach((s,i)=>{
-    const b=document.createElement('button');
-    b.className='filter-chip'+(i===0?' active':'');
-    b.textContent=s.label;
-    b.onclick=()=>{
-      activeSweep=i;
-      cont.querySelectorAll('.filter-chip').forEach(x=>x.classList.remove('active'));
-      b.classList.add('active');
-      drawSweep();
-    };
-    cont.appendChild(b);
-  });
-}
-
-function drawSweep(){
-  const sw=SWEEPS[activeSweep];
-  const base=getInp();
-  const vals=[];
-  for(let v=sw.min;v<=sw.max+1e-9;v+=sw.step)vals.push(+v.toFixed(4));
-  const gpL=vals.map(v=>{const r=[...base];r[sw.idx]=v;return gpPred(r).mean;});
-  const gbL=vals.map(v=>{const r=[...base];r[sw.idx]=v;return gbPred(r);});
-  const rfL=vals.map(v=>{const r=[...base];r[sw.idx]=v;return rfPred(r);});
-  const cusL=vals.map(v=>{const r=[...base];r[sw.idx]=v;return nn2Pred(r);});
-  const labels=vals.map(v=>`${v}${sw.unit}`);
-  if(sweepChartInst){
-    sweepChartInst.data.labels=labels;
-    sweepChartInst.data.datasets[0].data=cusL;
-    sweepChartInst.data.datasets[1].data=gpL;
-    sweepChartInst.data.datasets[2].data=gbL;
-    sweepChartInst.data.datasets[3].data=rfL;
-    sweepChartInst.update();
-    return;
-  }
-  const ctx=document.getElementById('sweep-chart').getContext('2d');
-  sweepChartInst=new Chart(ctx,{
-    type:'line',
-    data:{
-      labels,
-      datasets:[
-        {label:'Custom Stack',data:cusL,borderColor:'rgba(244,143,177,0.95)',backgroundColor:'rgba(244,143,177,0.07)',borderWidth:2.5,pointRadius:0,fill:true,tension:0.4},
-        {label:'GP',data:gpL,borderColor:'rgba(105,240,174,0.85)',backgroundColor:'transparent',borderWidth:2,pointRadius:0,tension:0.4},
-        {label:'GB',data:gbL,borderColor:'rgba(129,212,250,0.8)',backgroundColor:'transparent',borderWidth:1.8,pointRadius:0,tension:0.3},
-        {label:'RF',data:rfL,borderColor:'rgba(255,213,79,0.75)',backgroundColor:'transparent',borderWidth:1.5,pointRadius:0,tension:0.3,borderDash:[5,4]},
-      ]
-    },
-    options:{
-      ...m3Defaults({
-        plugins:{
-          legend:{display:true,position:'top',align:'start',labels:{color:M3.tick,boxWidth:10,boxHeight:2,font:{size:11},padding:12}},
-          tooltip:{mode:'index',intersect:false,backgroundColor:M3.tooltip.bg,titleColor:M3.tooltip.title,bodyColor:M3.tooltip.body,borderColor:M3.tooltip.border,borderWidth:1}
-        }
-      })
-    }
-  });
-}
-
-function initAvpFullChart(){
-  if(avpFullChartInst)return;
-  const acts=DATA.map(r=>r[7]);
-  const ctx=document.getElementById('avp-full-chart').getContext('2d');
-  avpFullChartInst=new Chart(ctx,{
-    type:'scatter',
-    data:{datasets:[
-      {label:'Custom Stack',data:acts.map((a,i)=>({x:a,y:nn2Pred(DATA[i].slice(0,7))})),backgroundColor:'rgba(244,143,177,0.8)',borderColor:'rgba(244,143,177,0.3)',borderWidth:1,pointRadius:5,pointStyle:'rectRot'},
-      {label:'GP',data:acts.map((a,i)=>({x:a,y:gpPred(DATA[i].slice(0,7)).mean})),backgroundColor:'rgba(105,240,174,0.7)',borderColor:'rgba(105,240,174,0.3)',borderWidth:1,pointRadius:4,pointStyle:'circle'},
-      {label:'GB',data:acts.map((a,i)=>({x:a,y:gbPred(DATA[i].slice(0,7))})),backgroundColor:'rgba(129,212,250,0.7)',borderColor:'rgba(129,212,250,0.3)',borderWidth:1,pointRadius:4,pointStyle:'rect'},
-      {label:'RF',data:acts.map((a,i)=>({x:a,y:rfPred(DATA[i].slice(0,7))})),backgroundColor:'rgba(255,213,79,0.7)',borderColor:'rgba(255,213,79,0.3)',borderWidth:1,pointRadius:4,pointStyle:'triangle'},
-    ]},
-    options:{
-      ...m3Defaults({
-        plugins:{
-          legend:{display:true,position:'top',align:'start',labels:{color:M3.tick,boxWidth:10,boxHeight:10,font:{size:11},padding:12,usePointStyle:true}},
-          tooltip:{callbacks:{label:d=>`${d.dataset.label} — A:${d.raw.x.toFixed(4)} P:${d.raw.y.toFixed(4)}`},backgroundColor:M3.tooltip.bg,titleColor:M3.tooltip.title,bodyColor:M3.tooltip.body,borderColor:M3.tooltip.border,borderWidth:1}
-        },
-        scales:{
-          x:{...m3Defaults().scales.x,title:{display:true,text:'Actual Cd',color:M3.tick,font:{size:11}},min:0.24,max:0.36},
-          y:{...m3Defaults().scales.y,title:{display:true,text:'Predicted Cd',color:M3.tick,font:{size:11}},min:0.24,max:0.36},
-        }
-      })
-    },
-    plugins:[PERFECT_LINE_PLUGIN(0.24,0.36)]
-  });
-}
-
-/* ── EXPAND/COLLAPSE ── */
-function toggleDetail(id,btn){
-  const el=document.getElementById(id);
-  el.classList.toggle('open');
-  const span=btn.querySelector('span');
-  const svg=btn.querySelector('svg');
-  span.textContent=el.classList.contains('open')?'See less':'See full explanation';
-  svg.style.transform=el.classList.contains('open')?'rotate(180deg)':'';
-}
-
-
-/* ── MOBILE NAV ── */
-function toggleNav(){
-  document.getElementById('main-nav').classList.toggle('open');
-  document.getElementById('nav-overlay').classList.toggle('open');
-}
-function closeNav(){
-  document.getElementById('main-nav').classList.remove('open');
-  document.getElementById('nav-overlay').classList.remove('open');
-}
-
-/* ── URL STATE SHARING ── */
-function shareCalcState(){
-  const inp=getInp();
-  const params=new URLSearchParams({
-    rlbf:inp[0],rhnw:inp[1],rhfb:inp[2],st:inp[3],cl:inp[4],bta:inp[5],fa:inp[6],
-    model:activeModel
-  });
-  const url=window.location.href.split('?')[0]+'?'+params.toString();
-  navigator.clipboard.writeText(url).then(()=>{
-    const btn=document.getElementById('share-btn-text');
-    btn.textContent='✓ Link copied!';
-    setTimeout(()=>btn.textContent='Copy shareable link',2500);
-  }).catch(()=>{
-    prompt('Copy this link:',url);
-  });
-}
-
-function loadStateFromURL(){
-  const p=new URLSearchParams(window.location.search);
-  const map={rlbf:'s-rlbf',rhnw:'s-rhnw',rhfb:'s-rhfb',st:'s-sidetaper',cl:'s-clearance',bta:'s-bottomtaper',fa:'s-frontalarea'};
-  let loaded=false;
-  for(const[k,sid] of Object.entries(map)){
-    const v=p.get(k);
-    if(v!==null){
-      const el=document.getElementById(sid);
-      if(el){el.value=v;loaded=true;}
-    }
-  }
-  const m=p.get('model');
-  if(m){
-    const btn=document.getElementById('sel-'+m);
-    if(btn)setModel(m,btn);
-  }
-  if(loaded)updateCalc();
-}
-
-/* Close nav on page switch (mobile) */
-const _origShowPage=showPage;
-/* ── INIT ── */
-setupSliders();
-updateCalc();
-initOverviewCharts();
-loadStateFromURL();
-['gp','gb','rf','nn','nn2'].forEach(r=>document.getElementById('row-'+r).classList.add('pred-active'));
-</script>
+<script src="dashboard.js"></script>
 </body>
-          </html>
+</html>
