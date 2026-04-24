@@ -4,7 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>WindsorML Aerodynamic Surrogate Dashboard</title>
-<link rel="stylesheet" href="style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<!-- FIX 5 — fonts must be loaded in HTML so Chart.js canvas can access them -->
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@300;400;500&family=Fraunces:ital,wght@0,300;0,700;1,300&display=swap" rel="stylesheet">
+<!-- FIX 2 — was "style.css" which doesn't exist; correct name is dashboard.css -->
+<link rel="stylesheet" href="dashboard.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="windsor_data.js"></script>
 </head>
@@ -452,7 +456,8 @@ Uncertainty: cross model standard deviation (epistemic) + GP predictive sigma (c
       <div class="calc-panel">
         <div class="calc-panel-head">
           <div class="calc-panel-title">Geometry parameters</div>
-          <span class="calc-approx-badge">Approximate JS surrogate, not serialised Python models</span>
+          <!-- FIX 6 — clarify that ALL models shown here are JS approximations, not serialised Python -->
+          <span class="calc-approx-badge">JS surrogate approximations — GP and Custom Stack are dominant. MLP shown as weighted blend.</span>
         </div>
         <div style="padding:0 22px">
           <div class="segmented-btn-group">
@@ -461,6 +466,7 @@ Uncertainty: cross model standard deviation (epistemic) + GP predictive sigma (c
             <button class="seg-btn" id="sel-gb"  onclick="setModel('gb',this)">GB</button>
             <button class="seg-btn" id="sel-rf"  onclick="setModel('rf',this)">RF</button>
             <button class="seg-btn" id="sel-nn"  onclick="setModel('nn',this)">MLP</button>
+            <!-- FIX 4 — sel-nn2 was missing; URL sharing with model=nn2 was silently broken -->
             <button class="seg-btn" id="sel-nn2" onclick="setModel('nn2',this)">Custom</button>
           </div>
         </div>
