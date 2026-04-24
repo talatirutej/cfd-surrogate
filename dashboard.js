@@ -125,8 +125,8 @@ function closeMobileNav(){
 let activeModel='all';
 function setModel(m,btn){
   activeModel=m;
-  document.querySelectorAll('.seg-btn').forEach(b=>b.classList.remove('active-seg'));
-  btn.classList.add('active-seg');
+  document.querySelectorAll('.seg-btn').forEach(b=>{b.classList.remove('active-seg');b.classList.remove('seg-active');});
+  btn.classList.add('active-seg');btn.classList.add('seg-active');
   const names={all:'Average of all models',gp:'Gaussian Process',gb:'Gradient Boosting',rf:'Random Forest',nn:'Neural Network (MLP)',nn2:'Custom Built Model'};
   document.getElementById('model-indicator').textContent=names[m]||'';
   ['gp','gb','rf','nn','nn2'].forEach(r=>document.getElementById('row-'+r).classList.toggle('pred-active',m==='all'||m===r));
@@ -342,12 +342,12 @@ function initAvpFullChart(){
   });
 }
 
-/* EXPAND */
+/* EXPAND — works for both .see-more-btn and .expand-btn */
 function toggleDetail(id,btn){
   const el=document.getElementById(id),open=el.classList.toggle('open');
   const span=btn.querySelector('span'),svg=btn.querySelector('svg');
-  span.textContent=open?'See less':'See more';
-  svg.style.transform=open?'rotate(180deg)':'';
+  if(span)span.textContent=open?'See less':'See more';
+  if(svg)svg.style.transform=open?'rotate(180deg)':'';
 }
 
 /* URL SHARING */
@@ -378,4 +378,9 @@ function loadStateFromURL(){
 document.addEventListener('DOMContentLoaded',()=>{
   setGreeting(); setupSliders(); updateCalc(); initOverviewCharts(); loadStateFromURL();
   ['gp','gb','rf','nn','nn2'].forEach(r=>document.getElementById('row-'+r).classList.add('pred-active'));
+  /* Ensure the default Best button is marked active in both naming conventions */
+  const defBtn=document.getElementById('sel-all');
+  if(defBtn){defBtn.classList.add('active-seg');defBtn.classList.add('seg-active');}
+  /* Initialise all slider fills */
+  document.querySelectorAll('input[type=range]').forEach(updateFill);
 });
