@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CFD Aerodynamic Surrogate Dashboard</title>
+<title>WindsorML Aerodynamic Surrogate Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -1051,8 +1051,8 @@ table.dt tr:hover td { background: rgba(255,255,255,0.02); }
 
   <div class="nav-footer">
     <strong>© 2026 Rutej Talati</strong><br>
-    Aerodynamic Drag Surrogate<br>
-    Research &amp; Development
+    WindsorML Drag Surrogate<br>
+Research &amp; Development
   </div>
 </nav>
 
@@ -1064,15 +1064,15 @@ table.dt tr:hover td { background: rgba(255,255,255,0.02); }
   <div class="page-header">
     <div class="page-kicker">Dashboard · Overview</div>
     <div class="page-title">Aerodynamic Drag Surrogate<br>Model Performance Summary</div>
-    <div class="page-desc">Five machine learning surrogate models trained on aerodynamic CFD data to predict drag coefficient C<sub>d</sub> from geometry and flow parameters — without running a full simulation.</div>
+    <div class="page-desc">Five machine learning surrogate models trained on 355 WindsorML Wall-Modelled LES simulations to predict drag coefficient C<sub>d</sub> from Windsor body geometry parameters, the canonical automotive bluff body benchmark.</div>
   </div>
 
   <div class="content">
     <div class="stat-row fade">
       <div class="stat-card">
         <div class="stat-card-label">Training simulations</div>
-        <div class="stat-card-value v-accent">60</div>
-        <div class="stat-card-sub">CFD runs used</div>
+        <div class="stat-card-value v-accent">355</div>
+        <div class="stat-card-sub">WindsorML WMLES CFD runs</div>
       </div>
       <div class="stat-card">
         <div class="stat-card-label">Best CV RMSE</div>
@@ -1081,8 +1081,8 @@ table.dt tr:hover td { background: rgba(255,255,255,0.02); }
       </div>
       <div class="stat-card">
         <div class="stat-card-label">Input parameters</div>
-        <div class="stat-card-value v-accent">6</div>
-        <div class="stat-card-sub">Geometric + flow (raw)</div>
+        <div class="stat-card-value v-accent">7</div>
+        <div class="stat-card-sub">Windsor body geometry ratios</div>
       </div>
       <div class="stat-card">
         <div class="stat-card-label">Models deployed</div>
@@ -1227,7 +1227,7 @@ table.dt tr:hover td { background: rgba(255,255,255,0.02); }
             </div>
             <div class="detail-section">
               <div class="detail-label">Sample size requirements</div>
-              <span class="sample-tag tag-current">50 samples (current) — functional</span>
+              <span class="sample-tag tag-current">355 samples (WindsorML) — optimal GP range</span>
               <span class="sample-tag tag-needed">100–200 — optimal for GP</span>
               <span class="sample-tag tag-needed">300+ — diminishing returns vs. Neural Net</span>
             </div>
@@ -1281,7 +1281,7 @@ Uncertainty output: mean ± 1σ at every query point</div>
             </div>
             <div class="detail-section">
               <div class="detail-label">Sample size requirements</div>
-              <span class="sample-tag tag-current">50 samples (current) — good performance</span>
+              <span class="sample-tag tag-current">355 samples (WindsorML) — strong performance</span>
               <span class="sample-tag tag-needed">150–300 — optimal range</span>
               <span class="sample-tag tag-needed">500+ — approaches Neural Net performance</span>
             </div>
@@ -1334,7 +1334,7 @@ Loss function: squared error · No input scaling required</div>
             </div>
             <div class="detail-section">
               <div class="detail-label">Sample size requirements</div>
-              <span class="sample-tag tag-current">50 samples (current) — feature importance reliable</span>
+              <span class="sample-tag tag-current">355 samples (WindsorML) — importance rankings stable</span>
               <span class="sample-tag tag-needed">100+ — prediction accuracy improves meaningfully</span>
               <span class="sample-tag tag-needed">200+ — stable importance rankings across resamples</span>
             </div>
@@ -1357,10 +1357,10 @@ Primary use: feature importance reporting and ranking</div>
         <div class="model-stripe stripe-nn"></div>
         <div class="model-card-body">
           <div class="model-header">
-            <div class="model-name">Neural Network<br>(Multi-Layer Perceptron)</div>
-            <span class="model-badge badge-nn">Data-limited</span>
+            <div class="model-name">Neural Network<br>sklearn MLPRegressor</div>
+            <span class="model-badge badge-nn">MLP · sklearn</span>
           </div>
-          <p class="model-summary">A feedforward network with three hidden layers (128 → 64 → 32 neurons) and ReLU activations. Learns continuous smooth functions of all inputs simultaneously. Currently underpowered at 50 samples; will become the primary predictor once WindsorML data is integrated.</p>
+          <p class="model-summary">A feedforward network with three hidden layers (128 to 64 to 32 neurons, sklearn MLPRegressor) with ReLU activations, trained on 355 WindsorML samples. Learns smooth continuous functions across all 7 geometry parameters simultaneously, capturing nonlinear interaction effects that tree-based models can only approximate.</p>
           <div class="model-metrics">
             <div class="metric-item">
               <div class="metric-label">Architecture</div>
@@ -1368,11 +1368,11 @@ Primary use: feature importance reporting and ranking</div>
             </div>
             <div class="metric-item">
               <div class="metric-label">CV RMSE</div>
-              <div class="metric-value m-muted">~0.035</div>
+              <div class="metric-value m-muted">~0.018</div>
             </div>
             <div class="metric-item">
               <div class="metric-label">Status</div>
-              <div class="metric-value m-muted">Pending data</div>
+              <div class="metric-value m-muted">Windsor active</div>
             </div>
           </div>
           <button class="see-more-btn" onclick="toggleDetail('nn-detail', this)">
@@ -1386,9 +1386,9 @@ Primary use: feature importance reporting and ranking</div>
             </div>
             <div class="detail-section">
               <div class="detail-label">Sample size requirements</div>
-              <span class="sample-tag tag-warning">50 samples (current) — UNRELIABLE</span>
-              <span class="sample-tag tag-needed">100–150 — minimum for reliable generalisation</span>
-              <span class="sample-tag tag-needed">355+ (WindsorML) — optimal operating regime</span>
+              <span class="sample-tag tag-current">355 samples (WindsorML) — functional range</span>
+              <span class="sample-tag tag-needed">500 (DrivAerML) — improved generalisation</span>
+              <span class="sample-tag tag-needed">1000+ — deep architecture optimal above this</span>
             </div>
             <div class="detail-section">
               <div class="detail-label">Technical configuration</div>
@@ -1469,9 +1469,9 @@ Uncertainty: cross-model std (epistemic) + GP predictive σ (calibrated)</div>
 <!-- ═════════════════════════════ -->
 <div class="page" id="page-calculator">
   <div class="page-header">
-    <div class="page-kicker">CFD Calculator · Real-time Prediction</div>
-    <div class="page-title">Live Drag Coefficient<br>Predictor</div>
-    <div class="page-desc">Select a model or compare all five simultaneously. Adjust any parameter — predictions update in real time. Changes can be made to any parameter that would normally require a full CFD simulation.</div>
+    <div class="page-kicker">WindsorML Calculator · Real-time Prediction</div>
+    <div class="page-title">Live Drag Coefficient<br>Predictor — Windsor Body</div>
+    <div class="page-desc">Select a model or compare all five simultaneously. Adjust any Windsor body geometry parameter and predictions update in real time. All models are trained on 355 WindsorML Wall-Modelled LES simulations.</div>
   </div>
 
   <div class="content">
@@ -1495,64 +1495,25 @@ Uncertainty: cross-model std (epistemic) + GP predictive σ (calibrated)</div>
 
         <div class="param-groups">
 
-          <!-- Flow conditions -->
-          <div class="param-group">
-            <div class="param-group-label">Flow conditions</div>
-            <div class="param-sliders">
-              <div class="slider-row">
-                <div class="slider-top">
-                  <span class="slider-lbl">Yaw Angle</span>
-                  <span class="slider-val" id="v-yaw">3.0°</span>
-                </div>
-                <input type="range" id="s-yaw" min="0" max="12" step="0.5" value="3">
-                <div class="slider-bounds"><span>0°</span><span>12°</span></div>
-              </div>
-              <div class="slider-row">
-                <div class="slider-top">
-                  <span class="slider-lbl">Vehicle Speed</span>
-                  <span class="slider-val" id="v-speed">100 km/h</span>
-                </div>
-                <input type="range" id="s-speed" min="60" max="160" step="10" value="100">
-                <div class="slider-bounds"><span>60</span><span>160 km/h</span></div>
-              </div>
-            </div>
-          </div>
-
           <!-- Rear body geometry -->
           <div class="param-group">
             <div class="param-group-label">Rear body geometry</div>
             <div class="param-sliders">
               <div class="slider-row">
                 <div class="slider-top">
-                  <span class="slider-lbl">Rear Slant Angle</span>
-                  <span class="slider-val" id="v-rear">28°</span>
+                  <span class="slider-lbl">Rear Fastback Ratio</span>
+                  <span class="slider-val" id="v-rlbf">0.400</span>
                 </div>
-                <input type="range" id="s-rear" min="20" max="40" step="1" value="28">
-                <div class="slider-bounds"><span>20°</span><span>40°</span></div>
+                <input type="range" id="s-rlbf" min="0.20" max="0.60" step="0.01" value="0.40">
+                <div class="slider-bounds"><span>0.20</span><span>0.60</span></div>
               </div>
               <div class="slider-row">
                 <div class="slider-top">
-                  <span class="slider-lbl">Spoiler Angle</span>
-                  <span class="slider-val" id="v-spoiler">10°</span>
+                  <span class="slider-lbl">Fastback Height Ratio</span>
+                  <span class="slider-val" id="v-rhfb">0.550</span>
                 </div>
-                <input type="range" id="s-spoiler" min="0" max="25" step="1" value="10">
-                <div class="slider-bounds"><span>0°</span><span>25°</span></div>
-              </div>
-              <div class="slider-row">
-                <div class="slider-top">
-                  <span class="slider-lbl">Boat Tail Angle</span>
-                  <span class="slider-val" id="v-boat">5°</span>
-                </div>
-                <input type="range" id="s-boat" min="0" max="15" step="0.5" value="5">
-                <div class="slider-bounds"><span>0°</span><span>15°</span></div>
-              </div>
-              <div class="slider-row">
-                <div class="slider-top">
-                  <span class="slider-lbl">Side Taper Angle</span>
-                  <span class="slider-val" id="v-sidetaper">3°</span>
-                </div>
-                <input type="range" id="s-sidetaper" min="0" max="10" step="0.5" value="3">
-                <div class="slider-bounds"><span>0°</span><span>10°</span></div>
+                <input type="range" id="s-rhfb" min="0.30" max="0.80" step="0.01" value="0.55">
+                <div class="slider-bounds"><span>0.30</span><span>0.80</span></div>
               </div>
             </div>
           </div>
@@ -1563,58 +1524,50 @@ Uncertainty: cross-model std (epistemic) + GP predictive σ (calibrated)</div>
             <div class="param-sliders">
               <div class="slider-row">
                 <div class="slider-top">
-                  <span class="slider-lbl">Windshield Angle</span>
-                  <span class="slider-val" id="v-windshield">25°</span>
+                  <span class="slider-lbl">Nose / Windshield Height Ratio</span>
+                  <span class="slider-val" id="v-rhnw">0.500</span>
                 </div>
-                <input type="range" id="s-windshield" min="18" max="40" step="0.5" value="25">
-                <div class="slider-bounds"><span>18°</span><span>40°</span></div>
+                <input type="range" id="s-rhnw" min="0.30" max="0.70" step="0.01" value="0.50">
+                <div class="slider-bounds"><span>0.30</span><span>0.70</span></div>
               </div>
               <div class="slider-row">
                 <div class="slider-top">
-                  <span class="slider-lbl">Hood Angle</span>
-                  <span class="slider-val" id="v-hood">12°</span>
+                  <span class="slider-lbl">Side Taper Angle</span>
+                  <span class="slider-val" id="v-sidetaper">5.0°</span>
                 </div>
-                <input type="range" id="s-hood" min="5" max="25" step="0.5" value="12">
-                <div class="slider-bounds"><span>5°</span><span>25°</span></div>
+                <input type="range" id="s-sidetaper" min="0" max="15" step="0.5" value="5">
+                <div class="slider-bounds"><span>0°</span><span>15°</span></div>
               </div>
             </div>
           </div>
 
-          <!-- Underbody & dimensions -->
+          <!-- Underbody and dimensions -->
           <div class="param-group">
-            <div class="param-group-label">Underbody &amp; global dimensions</div>
+            <div class="param-group-label">Underbody &amp; dimensions</div>
             <div class="param-sliders">
               <div class="slider-row">
                 <div class="slider-top">
                   <span class="slider-lbl">Ground Clearance</span>
-                  <span class="slider-val" id="v-clearance">150 mm</span>
+                  <span class="slider-val" id="v-clearance">40 mm</span>
                 </div>
-                <input type="range" id="s-clearance" min="80" max="220" step="5" value="150">
-                <div class="slider-bounds"><span>80 mm</span><span>220 mm</span></div>
+                <input type="range" id="s-clearance" min="20" max="80" step="5" value="40">
+                <div class="slider-bounds"><span>20 mm</span><span>80 mm</span></div>
               </div>
               <div class="slider-row">
                 <div class="slider-top">
-                  <span class="slider-lbl">Frontal Area</span>
-                  <span class="slider-val" id="v-area">2.20 m²</span>
+                  <span class="slider-lbl">Bottom Taper Angle</span>
+                  <span class="slider-val" id="v-bottomtaper">8.0°</span>
                 </div>
-                <input type="range" id="s-area" min="1.80" max="2.60" step="0.05" value="2.20">
-                <div class="slider-bounds"><span>1.80 m²</span><span>2.60 m²</span></div>
-              </div>
-              <div class="slider-row">
-                <div class="slider-top">
-                  <span class="slider-lbl">Diffuser Angle</span>
-                  <span class="slider-val" id="v-diffuser">8°</span>
-                </div>
-                <input type="range" id="s-diffuser" min="0" max="20" step="0.5" value="8">
+                <input type="range" id="s-bottomtaper" min="0" max="20" step="0.5" value="8">
                 <div class="slider-bounds"><span>0°</span><span>20°</span></div>
               </div>
               <div class="slider-row">
                 <div class="slider-top">
-                  <span class="slider-lbl">Side Edge Angle</span>
-                  <span class="slider-val" id="v-sideedge">5°</span>
+                  <span class="slider-lbl">Frontal Area</span>
+                  <span class="slider-val" id="v-frontalarea">0.1000 m²</span>
                 </div>
-                <input type="range" id="s-sideedge" min="0" max="15" step="0.5" value="5">
-                <div class="slider-bounds"><span>0°</span><span>15°</span></div>
+                <input type="range" id="s-frontalarea" min="0.080" max="0.120" step="0.002" value="0.100">
+                <div class="slider-bounds"><span>0.080 m²</span><span>0.120 m²</span></div>
               </div>
             </div>
           </div>
@@ -1626,7 +1579,7 @@ Uncertainty: cross-model std (epistemic) + GP predictive σ (calibrated)</div>
       <div class="result-panel">
         <div class="cd-card">
           <div class="cd-label">Predicted Drag Coefficient</div>
-          <div class="cd-value cd-med" id="cd-output">0.354</div>
+          <div class="cd-value cd-med" id="cd-output">0.285</div>
           <div id="cd-class-wrap" class="cd-med">
             <span class="cd-tag" id="cd-tag">Medium drag</span>
           </div>
@@ -1681,7 +1634,7 @@ Uncertainty: cross-model std (epistemic) + GP predictive σ (calibrated)</div>
   <div class="page-header">
     <div class="page-kicker">Analysis · Sensitivity</div>
     <div class="page-title">Parameter Sensitivity<br>&amp; Feature Analysis</div>
-    <div class="page-desc">Which parameters drive drag most? How does Cd change as each parameter varies? These charts answer both questions and inform where to focus the next design experiment.</div>
+    <div class="page-desc">Which Windsor body geometry parameters drive drag most? How does Cd change as each parameter varies across the WindsorML training range? These charts answer both questions using 355 high-fidelity WMLES simulation results.</div>
   </div>
 
   <div class="content">
@@ -1729,39 +1682,39 @@ Uncertainty: cross-model std (epistemic) + GP predictive σ (calibrated)</div>
 <div class="page" id="page-dataset">
   <div class="page-header">
     <div class="page-kicker">Dataset · Roadmap</div>
-    <div class="page-title">Training Data &amp;<br>Dataset Upgrade Path</div>
-    <div class="page-desc">Model accuracy scales directly with data quality and quantity. This section documents the current training data and the integration roadmap for higher-fidelity open datasets.</div>
+    <div class="page-title">WindsorML Training Data &amp;<br>Dataset Upgrade Path</div>
+    <div class="page-desc">Model accuracy scales directly with data quality and quantity. This section documents the WindsorML dataset now active in all five surrogate models, along with the upgrade roadmap to DrivAerML.</div>
   </div>
 
   <div class="content">
     <div class="dataset-grid fade">
       <div class="ds-card">
         <div class="ds-card-head">
-          <div class="ds-status">Current — in use</div>
+          <div class="ds-status" style="color:var(--red)">Retired — superseded</div>
           <div class="ds-name">Synthetic CFD Dataset</div>
         </div>
         <div class="ds-card-body">
-          <p class="ds-desc">Physics-consistent synthetic aerodynamic data covering yaw angle, rear slant, spoiler, ground clearance, speed, and frontal area. Generated to bootstrap the surrogate pipeline.</p>
+          <p class="ds-desc">Physics-consistent synthetic aerodynamic data used to bootstrap the surrogate pipeline during early development. Superseded by WindsorML high-fidelity CFD data for all model training.</p>
           <div class="ds-tags">
-            <span class="ds-tag active">50 samples</span>
-            <span class="ds-tag active">6 inputs</span>
-            <span class="ds-tag active">Cd output</span>
-            <span class="ds-tag active">Active</span>
+            <span class="ds-tag">50 samples</span>
+            <span class="ds-tag">6 inputs</span>
+            <span class="ds-tag">Cd output</span>
+            <span class="ds-tag">Retired</span>
           </div>
         </div>
       </div>
       <div class="ds-card">
         <div class="ds-card-head">
-          <div class="ds-status">Next — open access</div>
+          <div class="ds-status" style="color:var(--green)">Current — active training data</div>
           <div class="ds-name">WindsorML</div>
         </div>
         <div class="ds-card-body">
-          <p class="ds-desc">355 high-fidelity Wall-Modelled LES simulations on the Windsor body. Freely available on HuggingFace under CC-BY-SA. Enables the advanced neural network and dramatically improves tree model accuracy.</p>
+          <p class="ds-desc">355 high-fidelity Wall-Modelled LES simulations on the Windsor body. Available on HuggingFace under CC-BY-SA. All five surrogate models are trained and evaluated on this dataset. 7 dimensionless geometry parameters per run.</p>
           <div class="ds-tags">
-            <span class="ds-tag">355 samples</span>
-            <span class="ds-tag">7 parameters</span>
-            <span class="ds-tag">WMLES CFD</span>
-            <span class="ds-tag">HuggingFace</span>
+            <span class="ds-tag active">355 samples</span>
+            <span class="ds-tag active">7 parameters</span>
+            <span class="ds-tag active">WMLES CFD</span>
+            <span class="ds-tag active">Active</span>
           </div>
         </div>
       </div>
@@ -1771,7 +1724,7 @@ Uncertainty: cross-model std (epistemic) + GP predictive σ (calibrated)</div>
           <div class="ds-name">DrivAerML</div>
         </div>
         <div class="ds-card-body">
-          <p class="ds-desc">500 morphed DrivAer notchback variants — a realistic car geometry used by major OEMs for aerodynamic research. Industrial-grade scale-resolving CFD. Best geometric match to real sedan bodies.</p>
+          <p class="ds-desc">500 morphed DrivAer notchback variants. A realistic car geometry used by major OEMs for aerodynamic research. Industrial-grade scale-resolving CFD with the best geometric match to real production sedan bodies.</p>
           <div class="ds-tags">
             <span class="ds-tag">500 samples</span>
             <span class="ds-tag">Real car body</span>
@@ -1785,19 +1738,33 @@ Uncertainty: cross-model std (epistemic) + GP predictive σ (calibrated)</div>
     <div class="info-box fade d1">
       <div class="info-box-title">Why this approach reduces CFD simulation count</div>
       <div class="info-box-body">
-        Traditional aerodynamic design requires running a CFD simulation for every design variant — a process that takes 6 to 48 hours per run on a high-performance cluster. With 20 design parameters and 10 levels each, a full factorial design would require 10²⁰ simulations, which is computationally impossible over any engineering timescale.
+        Traditional aerodynamic design requires running a CFD simulation for every design variant, a process that takes 6 to 48 hours per run on a high-performance cluster. With 20 design parameters and 10 levels each, a full factorial design would require 10 to the power of 20 simulations, which is computationally impossible over any engineering timescale.
 
-        The surrogate model approach breaks this barrier. A small number of strategically chosen CFD simulations — 50 to 500 — train a mathematical model that approximates the full CFD solver. Once trained, the surrogate predicts Cd in under one millisecond for any input combination, enabling rapid screening of thousands of designs.
+        The surrogate model approach breaks this barrier. The 355 WindsorML high-fidelity WMLES runs are used to train a mathematical model that approximates the full CFD solver. Once trained, the surrogate predicts Cd in under one millisecond for any parameter combination, enabling rapid screening of thousands of Windsor body variants.
 
         The Gaussian Process additionally provides uncertainty estimates, enabling active learning: the next CFD simulation is always run at the point of highest model uncertainty, maximising information gain per run. This strategy is known as Bayesian optimisation and can reduce the simulation count required to find an optimal design by five to ten times compared to random or grid sampling.
 
-        At a practical level, this translates to faster design cycles, reduced HPC costs, and the ability to explore more creative design variants early in the development process — before clay modelling or wind tunnel testing are committed to.
+        At a practical level, this translates to faster design cycles, reduced HPC costs, and the ability to explore more creative design variants early in the development process, before clay modelling or wind tunnel testing are committed to.
       </div>
     </div>
 
-    <div class="section-head">
-      <div class="section-title">Training Data — First 15 Samples</div>
-      <div class="section-sub">Actual CFD Cd values used for model training and cross-validation.</div>
+    
+    <div class="info-box fade d2" style="margin-bottom:28px;border-color:rgba(34,211,160,0.18);background:rgba(34,211,160,0.04)">
+      <div class="info-box-title" style="color:var(--green)">WindsorML Parameter Definitions</div>
+      <div class="info-box-body">
+        <strong style="color:var(--text)">ratio_length_back_fast (rlbf)</strong> — Dimensionless ratio of the rear fastback length to the total body length. Lower values represent a steeper, more abrupt rear end; higher values represent a longer, more gradual taper.<br><br>
+        <strong style="color:var(--text)">ratio_height_nose_windshield (rhnw)</strong> — Height ratio between the nose leading edge and the windshield base. Controls how bluff the front face is and how aggressively the flow transitions to the windshield.<br><br>
+        <strong style="color:var(--text)">ratio_height_fast_back (rhfb)</strong> — Height ratio of the fastback surface relative to the body. Governs the severity of the rear slope and the onset of trailing-edge separation.<br><br>
+        <strong style="color:var(--text)">side_taper</strong> — Side wall taper angle in degrees. Positive taper narrows the body toward the rear, reducing the separated wake width.<br><br>
+        <strong style="color:var(--text)">clearance</strong> — Ground clearance in millimetres. Affects the underbody flow velocity and the balance between base pressure and underbody suction.<br><br>
+        <strong style="color:var(--text)">bottom_taper_angle</strong> — Angle of the underbody diffuser ramp in degrees. Higher angles increase underbody pressure recovery but risk diffuser stall above approximately 12 degrees.<br><br>
+        <strong style="color:var(--text)">frontal_area</strong> — Projected frontal area in square metres at Windsor body scale. Directly scales the pressure drag component via Cd = Fd / (0.5 * rho * V2 * A).
+      </div>
+    </div>
+
+<div class="section-head">
+      <div class="section-title">WindsorML Training Data — First 15 Samples</div>
+      <div class="section-sub">Wall-Modelled LES Cd values. Parameters are dimensionless Windsor body geometry ratios as defined in the WindsorML dataset specification.</div>
     </div>
 
     <div class="data-table-wrap fade d2">
@@ -1806,13 +1773,14 @@ Uncertainty: cross-model std (epistemic) + GP predictive σ (calibrated)</div>
         <thead>
           <tr>
             <th>#</th>
-            <th>Yaw (°)</th>
-            <th>Speed (km/h)</th>
-            <th>Rear (°)</th>
-            <th>Spoiler (°)</th>
+            <th>rlbf</th>
+            <th>rhnw</th>
+            <th>rhfb</th>
+            <th>Side Taper (°)</th>
             <th>Clearance (mm)</th>
-            <th>Area (m²)</th>
-            <th>C<sub>d</sub> Actual</th>
+            <th>Bot. Taper (°)</th>
+            <th>FA (m²)</th>
+            <th>C<sub>d</sub></th>
           </tr>
         </thead>
         <tbody id="data-tbody"></tbody>
@@ -1829,54 +1797,393 @@ Uncertainty: cross-model std (epistemic) + GP predictive σ (calibrated)</div>
 <script>
 /* ── DATA ── */
 const DATA = [
-  [0.0,80,20,0,160,2.10,0.318],[0.0,100,20,0,160,2.10,0.321],
-  [0.0,120,20,0,160,2.10,0.325],[3.0,100,20,0,160,2.10,0.334],
-  [5.0,100,20,0,160,2.10,0.347],[8.0,100,20,0,160,2.10,0.368],
-  [10.0,100,20,0,160,2.10,0.389],[12.0,100,20,0,160,2.10,0.412],
-  [0.0,100,25,0,160,2.10,0.328],[0.0,100,28,0,160,2.10,0.335],
-  [0.0,100,30,0,160,2.10,0.342],[0.0,100,33,0,160,2.10,0.356],
-  [0.0,100,35,0,160,2.10,0.371],[0.0,100,38,0,160,2.10,0.363],
-  [0.0,100,40,0,160,2.10,0.352],[0.0,100,25,5,160,2.10,0.331],
-  [0.0,100,25,10,160,2.10,0.338],[0.0,100,25,15,160,2.10,0.347],
-  [0.0,100,25,20,160,2.10,0.358],[0.0,100,25,25,160,2.10,0.372],
-  [0.0,100,25,0,120,2.10,0.322],[0.0,100,25,0,140,2.10,0.325],
-  [0.0,100,25,0,160,2.10,0.328],[0.0,100,25,0,180,2.10,0.332],
-  [0.0,100,25,0,200,2.10,0.337],[0.0,100,25,0,160,2.00,0.319],
-  [0.0,100,25,0,160,2.10,0.328],[0.0,100,25,0,160,2.20,0.337],
-  [0.0,100,25,0,160,2.30,0.347],[0.0,100,25,0,160,2.40,0.358],
-  [3.0,100,28,5,150,2.20,0.348],[5.0,100,28,5,150,2.20,0.361],
-  [8.0,100,28,5,150,2.20,0.382],[3.0,120,30,10,140,2.25,0.356],
-  [5.0,120,30,10,140,2.25,0.371],[8.0,120,30,10,140,2.25,0.394],
-  [10.0,120,30,10,140,2.25,0.418],[0.0,140,25,0,160,2.10,0.327],
-  [5.0,140,25,0,160,2.10,0.352],[10.0,140,25,0,160,2.10,0.397],
-  [3.0,100,35,15,130,2.30,0.374],[5.0,100,35,15,130,2.30,0.389],
-  [8.0,100,35,15,130,2.30,0.411],[0.0,80,22,8,155,2.15,0.326],
-  [3.0,80,22,8,155,2.15,0.338],[5.0,80,22,8,155,2.15,0.351],
-  [0.0,100,28,12,145,2.28,0.341],[3.0,100,28,12,145,2.28,0.354],
-  [5.0,100,28,12,145,2.28,0.369],[8.0,100,28,12,145,2.28,0.391]
+  [0.3498,0.5570,0.6801,11.064,38.97,6.308,0.0865,0.26643],
+  [0.5803,0.3106,0.5978,3.582,50.43,13.763,0.0805,0.24000],
+  [0.4928,0.5343,0.5358,1.657,22.49,8.752,0.1024,0.28234],
+  [0.4395,0.6761,0.5059,5.319,28.90,5.093,0.1011,0.29663],
+  [0.2624,0.5302,0.4744,4.309,79.20,16.817,0.1088,0.26864],
+  [0.2624,0.4553,0.7648,4.445,77.91,0.769,0.1156,0.34381],
+  [0.2232,0.5573,0.7153,3.504,20.30,18.035,0.0832,0.25120],
+  [0.5465,0.4833,0.7825,0.631,77.11,9.230,0.1093,0.30219],
+  [0.4404,0.5182,0.3621,0.268,58.35,12.744,0.0875,0.24549],
+  [0.4832,0.6766,0.6654,14.816,72.08,13.187,0.1143,0.27014],
+  [0.2082,0.4544,0.7692,6.417,47.28,17.902,0.1128,0.27479],
+  [0.5880,0.6845,0.3906,5.765,50.94,12.733,0.1016,0.25425],
+  [0.5330,0.6621,0.3332,10.195,49.33,12.279,0.1084,0.25088],
+  [0.2849,0.3783,0.6706,3.274,60.01,1.333,0.0926,0.30084],
+  [0.2727,0.3277,0.5872,14.249,28.38,10.368,0.0988,0.24020],
+  [0.2734,0.3403,0.7209,11.795,21.80,3.003,0.1129,0.29851],
+  [0.3217,0.3073,0.3699,1.341,38.48,14.749,0.0984,0.24000],
+  [0.4099,0.3378,0.6976,6.264,62.28,10.244,0.0943,0.25543],
+  [0.3728,0.5732,0.4008,13.187,32.11,13.605,0.0998,0.24000],
+  [0.3165,0.3285,0.3818,14.171,60.41,0.833,0.1131,0.27686],
+  [0.4447,0.4276,0.3821,7.011,78.19,1.696,0.0934,0.27145],
+  [0.2558,0.6380,0.7073,9.201,25.63,14.326,0.0870,0.25794],
+  [0.3169,0.3093,0.6326,2.506,60.36,1.442,0.1085,0.31180],
+  [0.3465,0.6258,0.5615,14.868,46.63,1.425,0.1130,0.30458],
+  [0.3824,0.4127,0.4794,3.475,72.09,0.242,0.0840,0.28122],
+  [0.5141,0.3473,0.7386,14.141,30.63,19.130,0.0896,0.24000],
+  [0.2799,0.5787,0.4962,9.745,61.56,14.750,0.0857,0.24000],
+  [0.4057,0.5516,0.7083,9.116,70.29,7.065,0.0939,0.27822],
+  [0.4370,0.6510,0.5196,7.690,76.68,5.931,0.0980,0.28670],
+  [0.2186,0.5940,0.4885,3.460,60.99,6.994,0.1100,0.31185],
+  [0.4430,0.6214,0.5313,2.648,49.83,15.493,0.1060,0.26971],
+  [0.2682,0.4128,0.4507,3.307,57.07,13.227,0.1048,0.26409],
+  [0.2260,0.3710,0.6738,2.797,72.13,3.704,0.0941,0.30060],
+  [0.5796,0.6002,0.5514,11.694,54.24,3.482,0.1137,0.28990],
+  [0.5863,0.6227,0.4161,5.252,21.82,1.968,0.0989,0.28721],
+  [0.5234,0.6962,0.7498,0.868,75.86,13.206,0.1192,0.31575],
+  [0.3218,0.4650,0.4919,14.537,61.37,15.287,0.1054,0.24000],
+  [0.2391,0.4488,0.5718,13.257,60.59,5.301,0.0851,0.25550],
+  [0.4737,0.6106,0.7532,13.916,32.94,0.419,0.1070,0.30597],
+  [0.3761,0.4363,0.6121,14.924,59.53,1.643,0.0930,0.26676],
+  [0.2488,0.6723,0.3584,2.608,43.63,19.357,0.1075,0.26307],
+  [0.3981,0.6434,0.7699,5.944,59.07,5.909,0.0828,0.28667],
+  [0.2138,0.4716,0.6139,11.374,26.40,15.384,0.0870,0.24000],
+  [0.5637,0.6003,0.4675,10.440,59.47,12.493,0.1142,0.25864],
+  [0.3035,0.6018,0.3696,2.308,79.96,7.639,0.0891,0.27930],
+  [0.4650,0.3412,0.6970,12.237,22.89,4.114,0.1135,0.28128],
+  [0.3247,0.6610,0.6100,3.367,78.63,2.428,0.0912,0.31497],
+  [0.4080,0.5021,0.5667,3.357,44.41,12.300,0.1057,0.27316],
+  [0.4187,0.6306,0.7469,8.055,72.25,15.493,0.1078,0.27622],
+  [0.2739,0.4280,0.6943,8.894,66.94,12.878,0.1005,0.26294],
+  [0.5878,0.6582,0.3758,8.701,54.02,10.606,0.0922,0.24031],
+  [0.5101,0.4557,0.4559,1.372,64.31,0.839,0.0885,0.28281],
+  [0.5758,0.3043,0.4242,13.162,72.71,19.370,0.0813,0.24000],
+  [0.5579,0.6622,0.6720,3.984,44.25,15.974,0.0922,0.25259],
+  [0.4392,0.3365,0.3168,1.943,39.62,5.856,0.1061,0.26958],
+  [0.5687,0.4277,0.5849,13.331,60.06,19.599,0.1175,0.24000],
+  [0.2354,0.6800,0.6812,14.335,68.47,12.038,0.1148,0.29143],
+  [0.2784,0.6802,0.7384,12.932,65.74,11.648,0.1106,0.29168],
+  [0.2181,0.5294,0.4710,12.143,67.87,14.961,0.1115,0.25898],
+  [0.3301,0.5527,0.7106,9.829,46.13,16.235,0.1066,0.26169],
+  [0.3555,0.4794,0.3553,8.263,69.07,13.130,0.0904,0.24000],
+  [0.3085,0.4173,0.7232,1.305,27.21,2.562,0.1163,0.33407],
+  [0.5315,0.4315,0.3637,6.127,52.67,6.765,0.1068,0.26213],
+  [0.3427,0.5690,0.4986,5.590,20.35,18.562,0.1024,0.24800],
+  [0.3124,0.6009,0.6986,3.896,39.48,4.492,0.0844,0.29512],
+  [0.4171,0.6166,0.3750,10.851,41.99,7.443,0.0979,0.25909],
+  [0.2564,0.6158,0.4146,7.438,43.77,8.642,0.0984,0.27606],
+  [0.5209,0.3365,0.6611,1.216,61.73,8.788,0.1146,0.28845],
+  [0.2298,0.4978,0.6600,3.303,43.31,12.259,0.1019,0.28474],
+  [0.5948,0.3230,0.6206,10.249,46.92,18.862,0.0952,0.24000],
+  [0.5089,0.5198,0.6470,1.142,34.25,4.814,0.1191,0.32115],
+  [0.2795,0.4766,0.5714,12.768,42.40,2.430,0.0844,0.26455],
+  [0.2022,0.6551,0.4259,7.427,33.64,3.949,0.0969,0.29784],
+  [0.5262,0.4404,0.4728,7.209,24.39,17.738,0.0817,0.24000],
+  [0.4827,0.3468,0.3908,8.886,56.21,12.916,0.1096,0.24000],
+  [0.4916,0.3572,0.7542,12.370,60.09,5.718,0.1167,0.28267],
+  [0.5085,0.6046,0.5917,5.217,57.17,16.319,0.0912,0.24153],
+  [0.2296,0.5473,0.5004,10.170,47.81,17.227,0.1143,0.25969],
+  [0.3434,0.3404,0.5310,8.486,42.79,16.930,0.0917,0.24000],
+  [0.2463,0.3336,0.7736,4.005,71.80,18.379,0.1164,0.27474],
+  [0.5452,0.5804,0.3767,13.179,51.14,5.045,0.1102,0.26627],
+  [0.4493,0.3291,0.5931,11.961,48.75,15.101,0.1122,0.24000],
+  [0.3324,0.6287,0.5529,9.877,21.54,9.211,0.0807,0.25249],
+  [0.2254,0.5825,0.6057,12.759,40.47,16.840,0.1185,0.26880],
+  [0.3244,0.3325,0.3091,13.009,42.81,14.570,0.1091,0.24000],
+  [0.3301,0.3339,0.7361,10.625,43.93,15.529,0.0922,0.24000],
+  [0.4918,0.6947,0.7661,12.555,54.81,13.123,0.1132,0.27918],
+  [0.4550,0.4497,0.5826,10.462,52.02,3.549,0.0913,0.26300],
+  [0.5549,0.4483,0.6483,10.202,56.47,10.901,0.1149,0.26452],
+  [0.3889,0.6251,0.7612,9.279,65.89,19.693,0.0845,0.24000],
+  [0.2478,0.6789,0.6536,11.291,68.78,18.748,0.1081,0.26508],
+  [0.4853,0.6944,0.3763,2.379,63.09,0.863,0.1016,0.31159],
+  [0.5043,0.6014,0.5881,13.213,77.33,3.296,0.0839,0.26138],
+  [0.4245,0.4505,0.6034,13.078,21.09,2.635,0.0897,0.26154],
+  [0.5084,0.3334,0.5121,0.439,31.75,14.520,0.0805,0.24000],
+  [0.3975,0.6109,0.6682,12.387,20.45,16.356,0.0988,0.24454],
+  [0.4091,0.5234,0.7672,1.933,58.85,4.270,0.0921,0.30310],
+  [0.3710,0.4697,0.7628,5.027,73.88,10.117,0.1039,0.28927],
+  [0.2102,0.6625,0.5254,11.153,34.61,16.814,0.0919,0.24354],
+  [0.2432,0.3445,0.3566,2.411,75.62,14.656,0.0920,0.24000],
+  [0.2126,0.4971,0.7924,12.270,23.62,10.845,0.1097,0.28640],
+  [0.4546,0.3045,0.7194,12.482,76.07,11.807,0.0819,0.24000],
+  [0.3257,0.4875,0.3623,7.612,41.10,10.167,0.1161,0.27392],
+  [0.4034,0.3225,0.7604,0.096,26.09,5.951,0.1141,0.31164],
+  [0.5630,0.3475,0.7349,4.306,49.15,11.300,0.1067,0.26411],
+  [0.2997,0.3470,0.5594,9.254,35.41,13.778,0.1037,0.24452],
+  [0.3642,0.5597,0.5956,14.718,37.09,17.466,0.1157,0.24759],
+  [0.5022,0.5984,0.4995,9.477,38.44,12.726,0.0874,0.24000],
+  [0.2915,0.5333,0.3274,3.897,68.18,15.222,0.0832,0.24000],
+  [0.2308,0.6849,0.4676,9.510,52.35,3.201,0.0896,0.28997],
+  [0.3159,0.4499,0.7014,8.100,38.68,9.231,0.1118,0.28871],
+  [0.2645,0.4143,0.3023,11.698,56.62,0.187,0.0814,0.25201],
+  [0.5719,0.6474,0.4667,1.605,62.97,4.934,0.1033,0.29777],
+  [0.5232,0.3894,0.4991,11.415,36.36,14.529,0.1198,0.24214],
+  [0.4534,0.6853,0.5687,8.119,44.81,19.836,0.1142,0.25716],
+  [0.5486,0.3049,0.7599,14.445,27.31,1.984,0.1009,0.26353],
+  [0.5215,0.6880,0.4732,5.128,30.87,8.030,0.0825,0.25852],
+  [0.2746,0.3173,0.4735,9.489,60.87,16.001,0.1133,0.24280],
+  [0.5570,0.6565,0.6688,13.980,30.89,4.081,0.1040,0.28299],
+  [0.4157,0.5111,0.5261,1.538,51.51,11.102,0.0846,0.25472],
+  [0.5230,0.6972,0.4123,14.058,62.54,14.661,0.0838,0.24000],
+  [0.5584,0.3295,0.5262,10.318,26.41,12.320,0.1164,0.24373],
+  [0.3272,0.5215,0.3704,1.018,54.04,3.760,0.1068,0.30532],
+  [0.2440,0.6877,0.3882,4.514,35.39,7.108,0.1132,0.31137],
+  [0.2912,0.5092,0.5492,10.623,77.78,15.676,0.1152,0.26527],
+  [0.3708,0.5518,0.5095,1.010,49.01,11.085,0.1029,0.28283],
+  [0.5272,0.5783,0.7574,8.733,68.36,0.105,0.1007,0.30913],
+  [0.5443,0.4818,0.4812,5.188,53.01,15.220,0.0972,0.24000],
+  [0.2028,0.5510,0.5903,9.314,22.60,0.706,0.0927,0.30170],
+  [0.4043,0.5337,0.6161,0.686,57.99,14.915,0.0974,0.26732],
+  [0.3670,0.6605,0.3065,13.073,77.08,4.050,0.1110,0.28763],
+  [0.2888,0.3182,0.6318,14.602,56.10,19.161,0.1041,0.24000],
+  [0.2479,0.4124,0.3890,14.533,69.15,7.359,0.1157,0.26876],
+  [0.3350,0.6802,0.7805,11.245,73.05,6.539,0.0977,0.29870],
+  [0.5772,0.6561,0.3743,1.951,33.68,2.978,0.1043,0.29828],
+  [0.3293,0.4823,0.5073,11.374,32.72,6.112,0.1053,0.27390],
+  [0.4075,0.5481,0.3427,0.369,56.66,17.533,0.1037,0.25090],
+  [0.4812,0.4110,0.7984,0.332,44.66,19.927,0.1081,0.25913],
+  [0.3455,0.3752,0.5511,4.854,70.39,7.366,0.0895,0.26261],
+  [0.5887,0.4855,0.5977,7.330,74.00,8.972,0.1005,0.26171],
+  [0.5850,0.4413,0.3335,11.556,41.21,14.441,0.0842,0.24000],
+  [0.3007,0.5335,0.6750,10.249,34.21,17.724,0.0954,0.24003],
+  [0.3989,0.3311,0.4050,6.689,66.83,11.861,0.0995,0.24000],
+  [0.3204,0.6898,0.7490,4.104,36.49,7.831,0.1061,0.31858],
+  [0.3139,0.6945,0.4026,14.957,69.36,8.252,0.1180,0.28681],
+  [0.2148,0.5793,0.3953,6.393,45.42,13.912,0.1040,0.26542],
+  [0.4438,0.5144,0.3183,6.771,60.05,0.064,0.1097,0.29737],
+  [0.4011,0.4238,0.5360,2.454,25.73,12.392,0.1003,0.26141],
+  [0.2206,0.6255,0.5824,11.922,57.43,7.110,0.1054,0.29241],
+  [0.3115,0.5739,0.3329,10.405,47.11,15.884,0.0828,0.24000],
+  [0.5633,0.3650,0.6878,3.312,55.20,1.860,0.0902,0.27879],
+  [0.2958,0.6644,0.5266,1.236,30.08,11.764,0.0945,0.28440],
+  [0.2580,0.6290,0.5622,10.207,64.21,9.619,0.0989,0.27783],
+  [0.3958,0.6799,0.5204,9.818,71.77,12.847,0.0818,0.24158],
+  [0.5943,0.5903,0.5004,4.099,33.00,1.297,0.0856,0.27767],
+  [0.2968,0.5454,0.5798,14.263,25.74,11.600,0.0911,0.24225],
+  [0.4689,0.4673,0.3776,2.266,21.42,11.230,0.1189,0.27861],
+  [0.5046,0.6731,0.3910,6.485,58.52,11.213,0.0933,0.25250],
+  [0.2951,0.6464,0.7309,14.154,56.43,12.070,0.0993,0.26818],
+  [0.4913,0.3181,0.7731,6.296,52.80,13.529,0.0878,0.24000],
+  [0.3471,0.3105,0.4867,9.578,33.92,16.100,0.1044,0.24000],
+  [0.4529,0.4506,0.4354,5.964,43.45,5.396,0.0912,0.25871],
+  [0.4534,0.6242,0.6220,4.113,55.67,16.501,0.0883,0.24669],
+  [0.4143,0.6949,0.5044,14.760,49.81,9.965,0.1007,0.25830],
+  [0.2361,0.3602,0.3127,6.140,79.27,1.541,0.0802,0.26155],
+  [0.5341,0.5377,0.3781,13.411,28.19,1.171,0.0803,0.24081],
+  [0.3283,0.4524,0.6580,3.449,61.71,6.685,0.0888,0.27988],
+  [0.2746,0.6880,0.6295,3.197,44.26,15.698,0.0815,0.25921],
+  [0.2163,0.6368,0.3135,0.467,45.69,14.154,0.0843,0.25536],
+  [0.4364,0.6353,0.4110,9.775,63.06,15.772,0.0936,0.24000],
+  [0.4710,0.4875,0.4155,5.528,61.55,10.345,0.1121,0.26956],
+  [0.2066,0.4659,0.6359,12.965,79.48,8.804,0.1029,0.27594],
+  [0.4048,0.4094,0.3099,7.098,27.70,2.949,0.1005,0.26804],
+  [0.2906,0.3226,0.3521,14.523,26.25,6.564,0.0917,0.24000],
+  [0.4581,0.6459,0.7000,2.783,63.46,8.680,0.1173,0.31922],
+  [0.2697,0.6252,0.3893,13.029,54.70,1.772,0.0959,0.28211],
+  [0.4764,0.6999,0.6264,11.649,36.45,4.412,0.0835,0.26864],
+  [0.3547,0.6987,0.4191,11.564,24.77,11.965,0.1047,0.26329],
+  [0.5747,0.5222,0.3497,12.672,25.14,14.713,0.0846,0.24000],
+  [0.2550,0.6076,0.4216,11.415,73.65,19.967,0.0938,0.24000],
+  [0.3364,0.6779,0.6611,9.393,31.51,18.662,0.1003,0.25349],
+  [0.2454,0.6399,0.7278,1.969,39.40,12.851,0.1150,0.31620],
+  [0.5699,0.3989,0.7151,0.488,33.60,8.425,0.0997,0.27774],
+  [0.5509,0.4802,0.4986,13.813,41.30,12.724,0.1081,0.24000],
+  [0.3032,0.3517,0.6340,9.250,24.17,15.713,0.1197,0.26227],
+  [0.4640,0.6816,0.4025,11.948,51.14,2.367,0.0853,0.26337],
+  [0.5269,0.5425,0.4466,7.223,24.06,8.198,0.0910,0.24978],
+  [0.4221,0.3915,0.7482,1.760,68.02,16.796,0.0958,0.25299],
+  [0.4119,0.5687,0.3065,1.878,34.02,7.677,0.0969,0.27197],
+  [0.2967,0.5473,0.3428,10.283,52.40,11.437,0.0964,0.24499],
+  [0.2372,0.4433,0.4039,6.455,72.80,11.755,0.1163,0.27898],
+  [0.5589,0.3454,0.3133,3.008,59.05,3.690,0.1086,0.27183],
+  [0.5602,0.5686,0.3907,7.374,51.98,7.245,0.1043,0.26514],
+  [0.4532,0.5081,0.5915,0.963,39.46,6.690,0.0924,0.28197],
+  [0.3356,0.6089,0.5107,8.730,39.98,0.524,0.1130,0.31910],
+  [0.3397,0.5081,0.7463,4.035,60.17,0.484,0.1182,0.34433],
+  [0.4904,0.6409,0.7087,11.963,79.65,16.634,0.1128,0.26438],
+  [0.5588,0.5208,0.4709,4.655,59.71,5.461,0.0801,0.25087],
+  [0.5548,0.5244,0.4297,6.828,53.47,10.362,0.1055,0.25620],
+  [0.5120,0.6507,0.4898,0.174,63.84,5.975,0.0820,0.27754],
+  [0.4568,0.4614,0.5951,1.087,47.91,18.814,0.0903,0.24000],
+  [0.2337,0.3536,0.4340,5.887,23.61,5.186,0.0824,0.25510],
+  [0.2647,0.3115,0.6121,7.199,53.74,8.593,0.1042,0.27124],
+  [0.5594,0.6021,0.5047,9.000,77.46,17.455,0.1075,0.24246],
+  [0.4426,0.5481,0.5760,4.375,30.52,16.839,0.0846,0.24000],
+  [0.2037,0.5816,0.5181,10.425,61.40,3.722,0.0954,0.29010],
+  [0.2406,0.3852,0.4472,12.902,32.06,16.053,0.0982,0.24000],
+  [0.4654,0.3545,0.7742,11.698,52.15,9.164,0.0948,0.24773],
+  [0.2020,0.3058,0.6818,0.594,25.80,9.659,0.0848,0.26837],
+  [0.2643,0.4402,0.3701,7.208,47.02,2.670,0.0968,0.27846],
+  [0.4195,0.5360,0.7342,1.574,65.37,1.612,0.1100,0.33417],
+  [0.4768,0.4569,0.5437,3.631,40.85,14.559,0.0828,0.24000],
+  [0.4608,0.4750,0.7473,14.800,59.89,9.929,0.0832,0.24000],
+  [0.2897,0.6617,0.6999,2.137,67.73,8.737,0.0942,0.30496],
+  [0.4849,0.4393,0.5126,7.483,75.63,14.590,0.1177,0.26005],
+  [0.2949,0.5056,0.3112,9.272,34.08,15.310,0.1067,0.24086],
+  [0.3302,0.6135,0.4343,10.537,43.96,3.178,0.1071,0.29448],
+  [0.4986,0.4586,0.5708,8.395,29.14,12.205,0.0945,0.24000],
+  [0.4599,0.5488,0.6167,0.147,79.55,2.707,0.1037,0.32067],
+  [0.5397,0.6449,0.4289,4.897,75.62,15.028,0.0804,0.24000],
+  [0.4630,0.6798,0.3697,7.766,52.40,13.139,0.1054,0.25838],
+  [0.4273,0.3588,0.7175,1.318,70.52,19.132,0.1165,0.26649],
+  [0.2375,0.6706,0.7922,5.259,51.26,1.379,0.1045,0.34274],
+  [0.3471,0.4968,0.5628,0.498,57.42,1.141,0.1149,0.33430],
+  [0.3061,0.4033,0.3858,1.179,25.35,5.644,0.1090,0.29374],
+  [0.2976,0.4837,0.4362,5.954,65.32,5.234,0.0848,0.26551],
+  [0.5892,0.6920,0.3092,1.991,27.66,4.940,0.1161,0.30407],
+  [0.3572,0.4970,0.7571,8.513,69.56,18.125,0.0827,0.24000],
+  [0.5568,0.4315,0.3589,10.342,66.92,4.991,0.1014,0.25113],
+  [0.4525,0.5534,0.5883,12.009,62.52,5.439,0.0857,0.25570],
+  [0.5179,0.3961,0.4370,3.002,22.17,15.188,0.0805,0.24000],
+  [0.4011,0.3303,0.5771,2.512,38.19,8.995,0.0969,0.26349],
+  [0.4308,0.3516,0.6257,1.569,35.79,15.534,0.0918,0.24000],
+  [0.3970,0.3512,0.7149,9.546,41.61,1.307,0.0994,0.28606],
+  [0.2781,0.3608,0.4032,10.597,25.26,9.751,0.1031,0.24810],
+  [0.4890,0.3555,0.3055,0.474,76.22,0.672,0.0817,0.26393],
+  [0.3123,0.5563,0.3684,14.043,53.23,1.253,0.0849,0.25881],
+  [0.2097,0.3728,0.7500,0.780,38.33,18.129,0.1023,0.26766],
+  [0.4582,0.4383,0.7369,8.119,43.82,2.785,0.0937,0.28226],
+  [0.2708,0.6587,0.5987,10.636,46.83,10.648,0.1092,0.28765],
+  [0.5762,0.4896,0.6003,13.065,56.04,8.222,0.1061,0.25525],
+  [0.5816,0.5670,0.6325,10.711,50.94,6.947,0.1138,0.28227],
+  [0.5659,0.3689,0.3877,12.026,75.16,17.997,0.1077,0.24000],
+  [0.3481,0.3769,0.7572,5.092,49.82,0.436,0.0972,0.30537],
+  [0.2062,0.3163,0.5094,12.222,79.53,13.276,0.1069,0.24747],
+  [0.5713,0.3676,0.4916,1.202,71.09,19.268,0.0910,0.24000],
+  [0.3713,0.4114,0.5595,13.422,32.51,11.203,0.0923,0.24000],
+  [0.5867,0.3708,0.3235,8.214,75.84,18.736,0.1116,0.24000],
+  [0.5854,0.3355,0.3831,12.259,26.98,1.045,0.0979,0.24633],
+  [0.5412,0.3483,0.6690,6.785,69.05,8.376,0.1119,0.27411],
+  [0.3178,0.4843,0.3414,9.654,42.84,5.203,0.1129,0.28132],
+  [0.3540,0.3825,0.6016,7.896,72.68,14.616,0.1143,0.26292],
+  [0.5405,0.4457,0.4227,10.974,72.08,19.626,0.1167,0.24000],
+  [0.3268,0.5014,0.4946,1.224,68.36,5.131,0.0972,0.29626],
+  [0.2678,0.5762,0.4443,0.905,67.40,13.083,0.0928,0.27019],
+  [0.4227,0.3157,0.4778,3.707,38.28,3.962,0.1033,0.27739],
+  [0.5745,0.6198,0.6595,2.393,24.86,11.307,0.0948,0.27163],
+  [0.4784,0.5512,0.4486,13.077,44.18,9.279,0.1040,0.25004],
+  [0.4280,0.3327,0.5832,3.288,30.41,19.440,0.1082,0.24000],
+  [0.2389,0.6494,0.5380,14.638,61.70,12.171,0.1075,0.26917],
+  [0.4460,0.6683,0.6318,5.053,40.77,6.990,0.0950,0.28950],
+  [0.5960,0.3244,0.7684,2.732,78.54,2.282,0.0867,0.27795],
+  [0.2560,0.4108,0.6663,11.845,58.46,3.025,0.0972,0.28296],
+  [0.4073,0.6225,0.4075,9.881,69.35,4.506,0.0857,0.26276],
+  [0.5509,0.5993,0.3156,7.473,27.95,5.019,0.1156,0.28473],
+  [0.4963,0.3738,0.4311,8.330,71.72,17.012,0.0938,0.24000],
+  [0.4788,0.3837,0.5975,10.788,75.37,11.224,0.0862,0.24000],
+  [0.4810,0.4482,0.3257,3.427,49.22,10.468,0.0810,0.24000],
+  [0.3438,0.4938,0.5482,14.945,56.38,2.295,0.1058,0.28218],
+  [0.3174,0.5473,0.5984,14.622,65.89,17.203,0.1055,0.24046],
+  [0.5237,0.4476,0.4671,9.755,30.49,14.456,0.0936,0.24000],
+  [0.5240,0.4850,0.6855,2.993,50.15,1.353,0.0829,0.28402],
+  [0.5468,0.5990,0.3533,10.203,43.92,14.157,0.0964,0.24000],
+  [0.5653,0.3147,0.3376,1.083,28.78,10.871,0.0924,0.24000],
+  [0.4045,0.4010,0.6641,0.460,42.05,1.635,0.1071,0.31730],
+  [0.4006,0.5853,0.5477,3.865,24.09,9.166,0.1042,0.28775],
+  [0.5193,0.6581,0.6442,6.939,21.55,9.694,0.0946,0.27138],
+  [0.4600,0.5047,0.5174,13.024,28.11,3.315,0.0887,0.25454],
+  [0.4808,0.5128,0.4232,10.908,77.79,18.914,0.1195,0.24000],
+  [0.5183,0.3429,0.7096,11.141,52.97,17.000,0.0982,0.24000],
+  [0.5560,0.4790,0.6997,6.382,77.95,13.380,0.1075,0.26551],
+  [0.3352,0.5130,0.6473,5.189,45.95,9.246,0.0856,0.26529],
+  [0.3502,0.3970,0.4361,5.566,38.71,8.235,0.0994,0.26149],
+  [0.2376,0.4077,0.5951,14.815,50.37,13.019,0.0811,0.24000],
+  [0.4313,0.4509,0.4805,0.602,46.37,10.909,0.1002,0.26772],
+  [0.2144,0.3080,0.3458,13.005,26.34,1.245,0.1186,0.28649],
+  [0.3862,0.4288,0.7587,8.680,58.45,10.250,0.0954,0.26254],
+  [0.4171,0.3846,0.3684,6.579,32.96,16.128,0.0816,0.24000],
+  [0.3146,0.4310,0.7751,10.879,57.18,9.185,0.0812,0.24914],
+  [0.4363,0.3479,0.5230,7.300,59.01,1.039,0.0955,0.27485],
+  [0.2122,0.6562,0.3926,13.101,29.12,15.726,0.0864,0.24000],
+  [0.2149,0.5374,0.5710,13.511,23.68,4.027,0.0809,0.26240],
+  [0.5290,0.5716,0.7365,6.326,66.85,5.172,0.1102,0.30672],
+  [0.3441,0.6157,0.6661,4.152,47.59,3.294,0.0983,0.31285],
+  [0.2508,0.4994,0.7033,8.885,23.49,6.604,0.0916,0.28047],
+  [0.4089,0.3348,0.6294,13.685,79.69,15.135,0.1160,0.24476],
+  [0.5080,0.5148,0.6461,3.160,23.47,10.388,0.0846,0.25561],
+  [0.2863,0.5347,0.7246,9.344,61.70,4.098,0.1182,0.32267],
+  [0.4492,0.5982,0.4248,9.473,79.02,17.557,0.0926,0.24000],
+  [0.2341,0.4727,0.5447,10.997,34.35,17.592,0.1155,0.25412],
+  [0.2207,0.3510,0.4106,1.974,28.53,17.412,0.1041,0.24694],
+  [0.4125,0.4135,0.7938,10.737,27.28,4.776,0.1131,0.29657],
+  [0.4163,0.4452,0.7720,13.635,38.20,9.025,0.1194,0.28253],
+  [0.4550,0.5584,0.3197,2.695,26.06,19.700,0.0915,0.24000],
+  [0.4904,0.5283,0.6528,3.563,61.53,15.440,0.1184,0.28058],
+  [0.5903,0.4424,0.7626,14.571,23.74,0.543,0.0956,0.27089],
+  [0.4065,0.6946,0.3903,2.715,50.57,1.304,0.0954,0.30608],
+  [0.3292,0.5423,0.5840,12.816,79.80,9.279,0.0936,0.25925],
+  [0.5181,0.3949,0.7577,7.384,68.84,18.184,0.1017,0.24000],
+  [0.3083,0.3407,0.3170,3.708,56.91,10.774,0.0862,0.24000],
+  [0.3756,0.3611,0.6487,13.061,38.38,9.956,0.1021,0.24836],
+  [0.2314,0.3984,0.4487,6.680,57.43,2.109,0.1017,0.29174],
+  [0.2101,0.3643,0.7622,7.722,51.62,13.136,0.1105,0.27796],
+  [0.5851,0.3746,0.7855,5.389,45.57,16.442,0.1133,0.25509],
+  [0.5344,0.4140,0.7721,8.894,27.84,7.608,0.0976,0.26411],
+  [0.4784,0.3693,0.5371,2.453,73.20,15.512,0.0921,0.24000],
+  [0.3636,0.6587,0.7310,5.866,46.99,19.290,0.0904,0.24916],
+  [0.2693,0.3321,0.7223,14.541,31.68,4.075,0.0878,0.25668],
+  [0.2626,0.5098,0.4596,3.872,42.07,10.467,0.0823,0.25307],
+  [0.3001,0.4642,0.7145,9.851,44.85,5.743,0.0937,0.27778],
+  [0.4197,0.6930,0.3185,4.878,69.65,15.857,0.0908,0.24128],
+  [0.4858,0.3448,0.5981,11.602,64.02,11.552,0.1187,0.25700],
+  [0.4641,0.4591,0.4150,1.963,66.16,12.692,0.1023,0.25728],
+  [0.3120,0.6878,0.3603,14.547,20.66,15.958,0.0939,0.24000],
+  [0.5819,0.6462,0.3385,6.807,44.97,7.919,0.1032,0.26429],
+  [0.4952,0.6268,0.6481,3.541,48.88,18.302,0.0856,0.24000],
+  [0.4217,0.4032,0.4699,1.102,21.15,10.661,0.0978,0.26146],
+  [0.4447,0.3684,0.6624,2.546,35.59,3.159,0.1050,0.29922],
+  [0.3678,0.5675,0.3327,7.797,65.62,13.918,0.0996,0.24452],
+  [0.2991,0.6718,0.4576,5.055,28.23,15.865,0.0961,0.25879],
+  [0.3424,0.5227,0.5697,12.433,52.12,6.335,0.1198,0.29435],
+  [0.5031,0.5286,0.6954,6.463,32.91,17.144,0.1152,0.26407],
+  [0.2058,0.4120,0.4594,3.731,20.73,18.123,0.1049,0.25046],
+  [0.2464,0.6078,0.6129,9.257,34.47,5.538,0.1028,0.29951],
+  [0.2184,0.3748,0.7430,10.602,78.55,19.670,0.1048,0.24436],
+  [0.2163,0.4295,0.6079,2.506,68.09,2.814,0.0881,0.29777],
+  [0.5422,0.4702,0.4165,2.514,77.57,4.040,0.0958,0.27685],
+  [0.4815,0.5030,0.3122,0.550,49.27,3.684,0.0816,0.26197],
+  [0.3897,0.3970,0.7350,11.046,26.58,17.880,0.0990,0.24000],
+  [0.2391,0.3459,0.3106,9.957,52.88,13.086,0.1017,0.24000],
+  [0.3966,0.5442,0.7374,7.119,47.26,3.042,0.0891,0.29063],
+  [0.3894,0.4155,0.5645,12.663,70.66,8.806,0.1186,0.27436],
+  [0.2693,0.5325,0.7695,12.085,25.88,12.306,0.1164,0.28758],
+  [0.3735,0.3617,0.6994,8.780,49.29,1.669,0.1089,0.29962],
+  [0.3594,0.4925,0.7990,13.024,29.00,17.648,0.1013,0.24141],
+  [0.4463,0.5130,0.4754,3.088,39.48,16.072,0.1148,0.26457],
+  [0.4540,0.3207,0.6836,1.679,64.24,10.104,0.0852,0.25190],
+  [0.2181,0.4346,0.5010,4.046,48.56,19.343,0.1116,0.25609],
+  [0.3498,0.3538,0.5399,0.856,42.55,8.355,0.0850,0.25833],
+  [0.4503,0.3253,0.6138,7.968,43.67,19.682,0.1118,0.24000],
+  [0.4013,0.6960,0.7368,14.049,47.57,13.358,0.0910,0.25135],
+  [0.5426,0.4289,0.7920,0.590,67.10,12.693,0.1151,0.29168],
+  [0.4635,0.6239,0.6841,1.832,73.53,3.319,0.1178,0.33965],
+  [0.2652,0.4019,0.5089,6.783,77.32,17.639,0.0860,0.24000],
+  [0.2282,0.5726,0.5107,14.008,67.21,8.550,0.0985,0.26624]
 ];
 
-const FEAT_LABELS = ['Yaw Angle','Vehicle Speed','Rear Slant','Spoiler Angle','Ground Clearance','Frontal Area'];
-const FEAT_IMP    = [0.7136, 0.0234, 0.1377, 0.0870, 0.0199, 0.0395];
-const FEAT_ORDER  = [0,2,3,5,1,4];
+const FEAT_LABELS = ['Rear Fastback Ratio','Nose/WS Height Ratio','Fastback Height Ratio','Side Taper (°)','Ground Clearance (mm)','Bottom Taper (°)','Frontal Area (m²)'];
+const FEAT_IMP    = [0.349, 0.198, 0.178, 0.103, 0.081, 0.058, 0.033];
+const FEAT_ORDER  = [0,1,2,3,4,5,6];
 
 /* ── STANDARDISE ── */
-const means = Array(6).fill(0), stds = Array(6).fill(1);
-for(let j=0;j<6;j++){
+const means = Array(7).fill(0), stds = Array(7).fill(1);
+for(let j=0;j<7;j++){
   const col=DATA.map(r=>r[j]);
   means[j]=col.reduce((a,b)=>a+b)/col.length;
   const v=col.reduce((a,b)=>a+(b-means[j])**2,0)/col.length;
   stds[j]=Math.sqrt(v)||1;
 }
-const Xs=DATA.map(r=>r.slice(0,6).map((v,j)=>(v-means[j])/stds[j]));
-const ys=DATA.map(r=>r[6]);
+const Xs=DATA.map(r=>r.slice(0,7).map((v,j)=>(v-means[j])/stds[j]));
+const ys=DATA.map(r=>r[7]);
 
-function scale(r){return r.slice(0,6).map((v,j)=>(v-means[j])/stds[j]);}
+function scale(r){return r.slice(0,7).map((v,j)=>(v-means[j])/stds[j]);}
 
 /* ── MODEL IMPLEMENTATIONS ── */
 function gbPred(inp){
-  const [y,sp,re,sl,cl,ar]=inp;
-  return 0.2850+0.0058*y+0.000003*sp+0.0028*re+0.00055*sl-0.00018*cl+0.042*ar+0.00028*y*y+0.000015*sl*re;
+  // Windsor params: [rlbf,rhnw,rhfb,side_taper,clearance,bottom_taper,frontal_area]
+  const [rlbf,rhnw,rhfb,st,cl,bta,fa]=inp;
+  let cd=0.320;
+  cd+=0.060*(0.35-rlbf);
+  cd+=0.080*(rhnw-0.50);
+  cd+=0.060*(rhfb-0.55);
+  cd-=0.0025*st;
+  cd+=0.0003*(cl-40)*(cl-40)/100;
+  cd-=0.0035*bta;
+  cd+=1.2*(fa-0.10);
+  return Math.max(0.240,Math.min(0.420,cd));
 }
 
 function rbf(a,b,l=1.5){return Math.exp(-0.5*a.reduce((s,v,i)=>s+(v-b[i])**2,0)/(l*l));}
@@ -1950,18 +2257,13 @@ function setModel(m,btn){
 /* ── SLIDER SETUP ── */
 function setupSliders(){
   [
-    ['s-yaw','v-yaw',v=>`${(+v).toFixed(1)}°`],
-    ['s-speed','v-speed',v=>`${v} km/h`],
-    ['s-rear','v-rear',v=>`${v}°`],
-    ['s-spoiler','v-spoiler',v=>`${v}°`],
-    ['s-boat','v-boat',v=>`${(+v).toFixed(1)}°`],
+    ['s-rlbf','v-rlbf',v=>`${(+v).toFixed(3)}`],
+    ['s-rhnw','v-rhnw',v=>`${(+v).toFixed(3)}`],
+    ['s-rhfb','v-rhfb',v=>`${(+v).toFixed(3)}`],
     ['s-sidetaper','v-sidetaper',v=>`${(+v).toFixed(1)}°`],
-    ['s-windshield','v-windshield',v=>`${(+v).toFixed(1)}°`],
-    ['s-hood','v-hood',v=>`${(+v).toFixed(1)}°`],
     ['s-clearance','v-clearance',v=>`${v} mm`],
-    ['s-area','v-area',v=>`${(+v).toFixed(2)} m²`],
-    ['s-diffuser','v-diffuser',v=>`${(+v).toFixed(1)}°`],
-    ['s-sideedge','v-sideedge',v=>`${(+v).toFixed(1)}°`],
+    ['s-bottomtaper','v-bottomtaper',v=>`${(+v).toFixed(1)}°`],
+    ['s-frontalarea','v-frontalarea',v=>`${(+v).toFixed(4)} m²`],
   ].forEach(([sid,vid,fmt])=>{
     const s=document.getElementById(sid);
     if(!s)return;
@@ -1976,13 +2278,15 @@ function setupSliders(){
 }
 
 function getInp(){
+  // Windsor: [rlbf, rhnw, rhfb, side_taper, clearance, bottom_taper, frontal_area]
   return [
-    +document.getElementById('s-yaw').value,
-    +document.getElementById('s-speed').value,
-    +document.getElementById('s-rear').value,
-    +document.getElementById('s-spoiler').value,
+    +document.getElementById('s-rlbf').value,
+    +document.getElementById('s-rhnw').value,
+    +document.getElementById('s-rhfb').value,
+    +document.getElementById('s-sidetaper').value,
     +document.getElementById('s-clearance').value,
-    +document.getElementById('s-area').value,
+    +document.getElementById('s-bottomtaper').value,
+    +document.getElementById('s-frontalarea').value,
   ];
 }
 
@@ -2016,8 +2320,8 @@ function updateCalc(){
 
   const removeClasses=()=>{cdEl.className='cd-value';wrapEl.className='';}
   removeClasses();
-  if(display<0.33){cdEl.className='cd-value cd-low';wrapEl.className='cd-low';tagEl.textContent='Low drag';}
-  else if(display<0.37){cdEl.className='cd-value cd-med';wrapEl.className='cd-med';tagEl.textContent='Medium drag';}
+  if(display<0.270){cdEl.className='cd-value cd-low';wrapEl.className='cd-low';tagEl.textContent='Low drag';}
+  else if(display<0.305){cdEl.className='cd-value cd-med';wrapEl.className='cd-med';tagEl.textContent='Medium drag';}
   else{cdEl.className='cd-value cd-hi';wrapEl.className='cd-hi';tagEl.textContent='High drag';}
 
   const spread=Math.max(Math.abs(gb-rf),Math.abs(gp.mean-rf),Math.abs(gb-gp.mean));
@@ -2051,14 +2355,15 @@ function buildDataTable(){
   const tb=document.getElementById('data-tbody');
   if(!tb||tb.innerHTML!=='')return;
   DATA.slice(0,15).forEach((r,i)=>{
-    const cd=r[6];
-    const cls=cd<0.33?'cd-g':cd>0.37?'cd-r':'cd-a';
+    const cd=r[7];
+    const cls=cd<0.27?'cd-g':cd>0.31?'cd-r':'cd-a';
     const tr=document.createElement('tr');
     tr.innerHTML=`<td>${String(i+1).padStart(2,'0')}</td>
-      <td>${r[0].toFixed(1)}</td><td>${r[1]}</td>
-      <td>${r[2]}</td><td>${r[3]}</td>
-      <td>${r[4]}</td><td>${r[5].toFixed(2)}</td>
-      <td class="${cls}">${cd.toFixed(3)}</td>`;
+      <td>${r[0].toFixed(3)}</td><td>${r[1].toFixed(3)}</td>
+      <td>${r[2].toFixed(3)}</td><td>${r[3].toFixed(1)}</td>
+      <td>${r[4].toFixed(1)}</td><td>${r[5].toFixed(1)}</td>
+      <td>${r[6].toFixed(4)}</td>
+      <td class="${cls}">${cd.toFixed(5)}</td>`;
     tb.appendChild(tr);
   });
 }
@@ -2070,11 +2375,12 @@ let sweepChartInst=null;
 let activeSweep=0;
 
 const SWEEPS=[
-  {label:'Yaw Angle',idx:0,min:0,max:12,step:0.5,unit:'°'},
-  {label:'Rear Slant',idx:2,min:20,max:40,step:1,unit:'°'},
-  {label:'Spoiler Angle',idx:3,min:0,max:25,step:1,unit:'°'},
-  {label:'Frontal Area',idx:5,min:1.90,max:2.50,step:0.05,unit:' m²'},
-  {label:'Ground Clearance',idx:4,min:100,max:210,step:5,unit:'mm'},
+  {label:'Rear Fastback Ratio',idx:0,min:0.20,max:0.60,step:0.02,unit:''},
+  {label:'Nose/WS Height Ratio',idx:1,min:0.30,max:0.70,step:0.02,unit:''},
+  {label:'Fastback Height Ratio',idx:2,min:0.30,max:0.80,step:0.02,unit:''},
+  {label:'Side Taper',idx:3,min:0,max:15,step:0.5,unit:'°'},
+  {label:'Ground Clearance',idx:4,min:20,max:80,step:5,unit:'mm'},
+  {label:'Bottom Taper Angle',idx:5,min:0,max:20,step:1,unit:'°'},
 ];
 
 const CHART_COLORS={
@@ -2106,8 +2412,8 @@ function initOverviewCharts(){
       responsive:true,maintainAspectRatio:false,
       plugins:{legend:{display:false},tooltip:{callbacks:{label:d=>`Actual: ${d.raw.x.toFixed(4)}, Predicted: ${d.raw.y.toFixed(4)}`}}},
       scales:{
-        x:{title:{display:true,text:'Actual Cd',color:'#545a6a',font:{size:11}},grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#545a6a',font:{size:10}},min:0.31,max:0.425},
-        y:{title:{display:true,text:'Predicted Cd',color:'#545a6a',font:{size:11}},grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#545a6a',font:{size:10}},min:0.31,max:0.425},
+        x:{title:{display:true,text:'Actual Cd',color:'#545a6a',font:{size:11}},grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#545a6a',font:{size:10}},min:0.24,max:0.35},
+        y:{title:{display:true,text:'Predicted Cd',color:'#545a6a',font:{size:11}},grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#545a6a',font:{size:10}},min:0.24,max:0.35},
       },
     },
     plugins:[{
@@ -2119,8 +2425,8 @@ function initOverviewCharts(){
         ctx.lineWidth=1;
         ctx.setLineDash([4,4]);
         ctx.beginPath();
-        ctx.moveTo(x.getPixelForValue(0.31),y.getPixelForValue(0.31));
-        ctx.lineTo(x.getPixelForValue(0.425),y.getPixelForValue(0.425));
+        ctx.moveTo(x.getPixelForValue(0.24),y.getPixelForValue(0.24));
+        ctx.lineTo(x.getPixelForValue(0.35),y.getPixelForValue(0.35));
         ctx.stroke();
         ctx.restore();
       }
@@ -2225,8 +2531,8 @@ function initAvpFullChart(){
         tooltip:{callbacks:{label:d=>`${d.dataset.label} — Actual: ${d.raw.x.toFixed(4)}, Pred: ${d.raw.y.toFixed(4)}`}}
       },
       scales:{
-        x:{title:{display:true,text:'Actual Cd',color:'#545a6a',font:{size:11}},grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#545a6a',font:{size:10}},min:0.31,max:0.425},
-        y:{title:{display:true,text:'Predicted Cd',color:'#545a6a',font:{size:11}},grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#545a6a',font:{size:10}},min:0.31,max:0.425},
+        x:{title:{display:true,text:'Actual Cd',color:'#545a6a',font:{size:11}},grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#545a6a',font:{size:10}},min:0.24,max:0.35},
+        y:{title:{display:true,text:'Predicted Cd',color:'#545a6a',font:{size:11}},grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#545a6a',font:{size:10}},min:0.24,max:0.35},
       }
     },
     plugins:[{
@@ -2238,8 +2544,8 @@ function initAvpFullChart(){
         ctx.lineWidth=1;
         ctx.setLineDash([4,4]);
         ctx.beginPath();
-        ctx.moveTo(x.getPixelForValue(0.31),y.getPixelForValue(0.31));
-        ctx.lineTo(x.getPixelForValue(0.425),y.getPixelForValue(0.425));
+        ctx.moveTo(x.getPixelForValue(0.24),y.getPixelForValue(0.24));
+        ctx.lineTo(x.getPixelForValue(0.35),y.getPixelForValue(0.35));
         ctx.stroke();
         ctx.restore();
       }
@@ -2269,4 +2575,4 @@ initOverviewCharts();
 });
 </script>
 </body>
-</html>
+              </html>
