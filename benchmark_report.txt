@@ -1,0 +1,37 @@
+================================================================
+ CFD SURROGATE MODEL BENCHMARK REPORT
+ Mahindra Research Valley — MRV-Aero-Stack v1
+================================================================
+ Dataset: cfd_data.csv   (n=60)
+ Target:  actual_cd
+ Features: ['yaw', 'speed', 'rear_angle', 'spoiler_angle', 'ground_clearance', 'frontal_area']
+
+ Out-of-fold 5-fold CV metrics (the honest numbers):
+ ------------------------------------------------------------
+   Model                         R²        RMSE         MAE
+   Random Forest             0.7853     0.01418     0.01071
+   Gradient Boosting         0.7184     0.01624     0.01164
+   Gaussian Process          0.9045     0.00946     0.00691
+   Neural Network          -13.6456     0.11715     0.08256
+   Custom Built Model        0.9352     0.00779     0.00598
+
+ Improvement over best baseline (Gaussian Process):  +17.6% RMSE
+
+ Hill-climb weights inside the ensemble:
+   xgb    0.000
+   lgb    0.000
+   cat    0.000
+   et     0.031
+   gp     0.969
+ Final combiner chosen: hill_climb
+
+ Architecture:
+   - Physics-engineered features (interactions, log, sqrt,
+     dynamic-pressure & Reynolds proxies)
+   - log(Cd) target transform
+   - 5 heterogeneous base learners: XGB, LGBM, CatBoost,
+     ExtraTrees, GaussianProcess
+   - 5-seed bagging inside each base learner
+   - Hill-climb OOF weight optimisation + Ridge meta, pick winner
+
+================================================================
