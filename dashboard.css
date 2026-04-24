@@ -1023,3 +1023,46 @@ nav.collapsed .nav-footer { justify-content: center; padding: 14px 0; }
   scrollbar-width: thin;
   scrollbar-color: rgba(79,195,247,0.25) var(--surface-cont);
 }
+
+/* ── CLASS NAME ALIASES — supports both HTML variants ── */
+.nav-label          { overflow:hidden;white-space:nowrap; }          /* alias for .nav-item-label */
+nav.collapsed .nav-label { display:none; }
+.nav-footer-text    { font-family:var(--fm);font-size:11px;color:rgba(255,255,255,.25);line-height:1.7;white-space:nowrap;overflow:hidden; }
+nav.collapsed .nav-footer-text { display:none; }
+.nav-subtitle       { font-family:var(--fm);font-size:10px;color:rgba(255,255,255,.35);overflow:hidden;white-space:nowrap; }
+nav.collapsed .nav-subtitle { display:none; }
+
+/* see-more-btn = alias for expand-btn */
+.see-more-btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:8px 18px;border-radius:var(--r-full);
+  font-family:var(--fb);font-size:13px;font-weight:600;
+  color:var(--inverse-primary);
+  background:rgba(79,195,247,0.12);
+  border:1px solid rgba(79,195,247,0.25);
+  cursor:pointer;
+  transition:background .2s,box-shadow .2s;letter-spacing:.01em;
+}
+.see-more-btn:hover{background:rgba(79,195,247,0.22);box-shadow:var(--e2);}
+.see-more-btn svg{transition:transform .25s var(--ease);flex-shrink:0;}
+
+/* segmented-btn-group = alias for seg-group */
+.segmented-btn-group{
+  display:flex;border:1px solid var(--border);
+  border-radius:var(--r-full);overflow:hidden;
+  background:var(--bg3);margin:14px 0 0;
+}
+.segmented-btn-group .seg-btn{ border-right:1px solid var(--border); }
+.segmented-btn-group .seg-btn:last-child{ border-right:none; }
+
+/* calc-approx-badge = alias for approx-badge */
+.calc-approx-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:4px 12px;border-radius:var(--r-full);
+  font-size:11px;font-weight:500;
+  color:var(--amber);background:var(--amber-cont);
+  border:1px solid rgba(191,54,12,0.3);font-family:var(--fm);
+}
+
+/* active-seg = alias for seg-active (used in uploaded HTML) */
+.seg-btn.active-seg { background:var(--black);color:var(--inverse-primary); }
